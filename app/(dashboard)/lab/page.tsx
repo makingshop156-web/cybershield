@@ -1,13 +1,30 @@
 "use client";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { TopBar } from "@/components/layout/TopBar";
 import { WebTerminal } from "@/components/features/WebTerminal";
-import { RealTerminal } from "@/components/features/terminal/RealTerminal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useProgress } from "@/lib/hooks";
 import { modules } from "@/lib/data";
 import { cn } from "@/lib/utils";
+import { CtfPanel } from "@/components/features/terminal/CtfPanel";
+import { Leaderboard } from "@/components/features/terminal/Leaderboard";
+
+const RealTerminal = dynamic(
+  () => import("@/components/features/terminal/RealTerminal").then((m) => m.RealTerminal),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-[460px] glass-enhanced rounded-xl flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-6 h-6 border-2 border-cyber-accent border-t-transparent rounded-full animate-spin" />
+          <span className="text-xs text-cyber-muted">Đang tải Terminal...</span>
+        </div>
+      </div>
+    ),
+  }
+);
 
 type TabType = "simulated" | "interactive";
 
@@ -80,7 +97,21 @@ export default function LabPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.25 }}
           >
-            {tab === "simulated" ? <WebTerminal /> : <RealTerminal />}
+            {tab === "simulated" ? (
+              <WebTerminal />
+            ) : (
+              <div className="flex flex-col lg:flex-row gap-6">
+                <div className="flex-1 min-w-0">
+                  <RealTerminal />
+                </div>
+                <div className="w-full lg:w-80 shrink-0 space-y-4">
+                  <CtfPanel />
+                  <div className="glass-enhanced rounded-xl p-5">
+                    <Leaderboard />
+                  </div>
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       </ErrorBoundary>

@@ -1,0 +1,21 @@
+{
+  "name": "CyberShield - Học Cybersecurity",
+  "short_name": "CyberShield",
+  "description": "Nền tảng học Cybersecurity từ Zero đến Hero — biến kiến thức bảo mật thành kỹ năng thực chiến",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e17",
+  "theme_color": "#0a0e17",
+  "orientation": "any",
+  "categories": ["education", "security", "productivity"],
+  "icons": [
+    {
+      "src": "/vercel.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

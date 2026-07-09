@@ -1,4 +1,6 @@
 import { VfsTree, VfsNode, resolvePath, getNode, dirname, basename, cloneFs, VIRTUAL_FS } from "./virtual-fs";
+import { sanitizeTerminalInput } from "@/lib/security/sanitize";
+import { checkRateLimit } from "@/lib/security/rate-limit";
 
 export interface ShellState {
   cwd: string;
@@ -217,7 +219,23 @@ function evalPythonExpr(expr: string): unknown {
 }
 
 export function executeCommand(input: string, state: ShellState): CommandResult {
-  const trimmed = input.trim();
+  // Irony Guard: Sanitize input
+  const sanitized = sanitizeTerminalInput(input);
+  if (!sanitized.clean) {
+    return { output: [`⛔ Irony Guard: ${sanitized.reason ?? "Từ chối"}`], state };
+  }
+  const safeInput = sanitized.sanitized || input;
+
+  // Irony Guard: Rate limiting
+  const rateCheck = checkRateLimit("terminal");
+  if (!rateCheck.allowed) {
+    return {
+      output: [`⛔ Irony Guard: Quá nhiều yêu cầu. Vui lòng đợi ${Math.ceil(rateCheck.resetMs / 1000)}s`],
+      state,
+    };
+  }
+
+  const trimmed = safeInput.trim();
   if (!trimmed) return { output: [], state };
 
   const parts = trimmed.split(/\s+/);
