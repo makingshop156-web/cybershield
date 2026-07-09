@@ -1,9 +1,12 @@
 "use client";
 import { forwardRef, type ButtonHTMLAttributes } from "react";
+import { motion, type HTMLMotionProps } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { ButtonVariant, ButtonSize } from "@/types";
 
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+type CombinedProps = ButtonHTMLAttributes<HTMLButtonElement> & HTMLMotionProps<"button">;
+
+interface ButtonProps extends CombinedProps {
   variant?: ButtonVariant;
   size?: ButtonSize;
   loading?: boolean;
@@ -29,6 +32,12 @@ const sizeStyles: Record<ButtonSize, string> = {
   lg: "px-6 py-2.5 text-base rounded-lg",
 };
 
+const springTap = { type: "spring" as const, stiffness: 500, damping: 17, mass: 0.5 };
+
+const MotionButton = motion.button as React.ForwardRefExoticComponent<
+  ButtonHTMLAttributes<HTMLButtonElement> & HTMLMotionProps<"button"> & React.RefAttributes<HTMLButtonElement>
+>;
+
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -43,11 +52,14 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => (
-    <button
+    <MotionButton
       ref={ref}
       disabled={disabled || loading}
+      whileHover={disabled || loading ? undefined : { scale: 1.03 }}
+      whileTap={disabled || loading ? undefined : { scale: 0.96 }}
+      transition={springTap}
       className={cn(
-        "inline-flex items-center justify-center gap-2 border font-medium transition-all duration-200",
+        "inline-flex items-center justify-center gap-2 border font-medium",
         "focus-visible:outline-2 focus-visible:outline-cyber-accent focus-visible:outline-offset-2",
         "disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none",
         "select-none",
@@ -69,7 +81,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         </svg>
       )}
       {children}
-    </button>
+    </MotionButton>
   )
 );
 Button.displayName = "Button";

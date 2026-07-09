@@ -41,7 +41,11 @@ export function InteractiveExercise({ exercise, onComplete }: InteractiveExercis
   };
 
   return (
-    <div className="glass-card rounded-xl p-6">
+    <motion.div
+      layout
+      className="glass-enhanced rounded-xl p-6"
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+    >
       <div className="text-sm font-medium mb-5 text-cyber-text">
         {exercise.question}
       </div>
@@ -136,7 +140,7 @@ export function InteractiveExercise({ exercise, onComplete }: InteractiveExercis
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
 
@@ -208,28 +212,37 @@ function OrderingExercise({
         <motion.div
           key={item.id}
           layout
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="flex items-center gap-2 glass rounded-lg px-4 py-2.5 text-sm"
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25, delay: idx * 0.03 }}
+          className="flex items-center gap-2 glass-enhanced rounded-lg px-4 py-2.5 text-sm"
         >
-          <span className="w-6 h-6 rounded-full bg-cyber-accent/10 text-cyber-accent flex items-center justify-center text-xs font-bold shrink-0">
+          <motion.span
+            whileHover={{ scale: 1.15 }}
+            className="w-6 h-6 rounded-full bg-cyber-accent/10 text-cyber-accent flex items-center justify-center text-xs font-bold shrink-0"
+          >
             {idx + 1}
-          </span>
+          </motion.span>
           <span className="flex-1 text-cyber-text">{item.text}</span>
           <div className="flex gap-1">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => move(idx, -1)}
               disabled={idx === 0}
               className="text-cyber-muted hover:text-cyber-text disabled:opacity-20 text-xs px-1"
             >
               ▲
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.2 }}
+              whileTap={{ scale: 0.9 }}
               onClick={() => move(idx, 1)}
               disabled={idx === ordered.length - 1}
               className="text-cyber-muted hover:text-cyber-text disabled:opacity-20 text-xs px-1"
             >
               ▼
-            </button>
+            </motion.button>
           </div>
         </motion.div>
       ))}
@@ -251,15 +264,20 @@ function TrueFalseExercise({
   return (
     <div className="space-y-3">
       {items.map((item, i) => (
-        <div
+        <motion.div
           key={item.id}
-          className="flex items-center gap-3 glass rounded-lg px-4 py-3 text-sm"
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: i * 0.05, type: "spring", stiffness: 300, damping: 25 }}
+          className="flex items-center gap-3 glass-enhanced rounded-lg px-4 py-3 text-sm"
         >
           <span className="flex-1 text-cyber-text">{item.text}</span>
           <div className="flex gap-2">
             {(["true", "false"] as const).map((val) => (
-              <button
+              <motion.button
                 key={val}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => {
                   const next = [...(Array.isArray(answer) ? answer : [])];
                   next[i] = val;
@@ -275,10 +293,10 @@ function TrueFalseExercise({
                 )}
               >
                 {val === "true" ? "✅ Đúng" : "❌ Sai"}
-              </button>
+              </motion.button>
             ))}
           </div>
-        </div>
+        </motion.div>
       ))}
     </div>
   );
@@ -299,29 +317,38 @@ function MCQExercise({
     <div className="space-y-2">
       {options.map((opt, i) => {
         const letter = String.fromCharCode(65 + i);
+        const selected = answer === letter;
         return (
-          <button
+          <motion.button
             key={i}
+            layout
+            initial={{ opacity: 0, x: -16 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.04, type: "spring", stiffness: 300, damping: 25 }}
+            whileHover={{ scale: 1.01, x: 4 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => onChange(letter)}
             className={cn(
-              "w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg border text-sm transition-all",
-              answer === letter
+              "w-full text-left flex items-center gap-3 px-4 py-3 rounded-lg border text-sm",
+              selected
                 ? "bg-cyber-accent/10 border-cyber-accent text-cyber-accent"
-                : "glass border-glass-border text-cyber-text hover:border-cyber-accent/40"
+                : "glass-enhanced border-glass-border text-cyber-text hover:border-cyber-accent/40"
             )}
           >
-            <span
+            <motion.span
+              animate={selected ? { scale: [1, 1.2, 1] } : {}}
+              transition={{ duration: 0.3 }}
               className={cn(
                 "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold border shrink-0",
-                answer === letter
+                selected
                   ? "border-cyber-accent bg-cyber-accent/20"
                   : "border-glass-border"
               )}
             >
               {letter}
-            </span>
+            </motion.span>
             {opt.replace(/^[A-Z][.)]\s*/, "")}
-          </button>
+          </motion.button>
         );
       })}
     </div>

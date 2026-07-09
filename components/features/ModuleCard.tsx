@@ -20,6 +20,19 @@ const GRADIENTS = [
   "from-emerald-500 to-teal-500",
 ];
 
+const lessonSpring = {
+  type: "spring" as const,
+  stiffness: 400,
+  damping: 25,
+  mass: 0.8,
+};
+
+const cardHoverSpring = {
+  type: "spring" as const,
+  stiffness: 300,
+  damping: 20,
+};
+
 export function ModuleCard({
   module,
   index,
@@ -34,11 +47,17 @@ export function ModuleCard({
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
   return (
-    <div className="relative pl-16 pb-8 last:pb-0">
+    <motion.div
+      className="relative pl-16 pb-8 last:pb-0"
+      layout
+      transition={lessonSpring}
+    >
       {/* Timeline dot */}
-      <div
+      <motion.div
+        layout
+        transition={lessonSpring}
         className={cn(
-          "absolute left-4 top-1.5 w-4 h-4 rounded-full border-2 -translate-x-[3px] z-10 transition-all duration-500",
+          "absolute left-4 top-1.5 w-4 h-4 rounded-full border-2 -translate-x-[3px] z-10",
           allDone
             ? "bg-cyber-green border-cyber-green shadow-lg shadow-cyber-green/20"
             : done > 0
@@ -56,27 +75,32 @@ export function ModuleCard({
             ✓
           </motion.span>
         )}
-      </div>
+      </motion.div>
 
       {/* Card */}
-      <div
+      <motion.div
+        layout
+        transition={lessonSpring}
+        whileHover={unlocked && !allDone ? { scale: 1.01, transition: cardHoverSpring } : undefined}
         className={cn(
-          "glass-card rounded-xl p-5 transition-all duration-300",
-          unlocked && !allDone && "hover:border-cyber-accent/20 hover:shadow-glow",
+          "glass-card rounded-xl p-5",
+          unlocked && !allDone && "hover:shadow-glow cursor-pointer",
           !unlocked && !speedrun && "opacity-50"
         )}
       >
         {/* Header */}
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: -3 }}
+              transition={cardHoverSpring}
               className={cn(
                 "w-8 h-8 rounded-lg bg-gradient-to-br shrink-0 flex items-center justify-center text-sm font-bold text-white",
                 GRADIENTS[index % GRADIENTS.length]
               )}
             >
               {index + 1}
-            </div>
+            </motion.div>
             <div className="min-w-0">
               <h2 className="font-semibold text-base truncate">
                 {module.title}
@@ -116,15 +140,32 @@ export function ModuleCard({
 
         {/* Lessons */}
         {unlocked && (
-          <div className="space-y-1">
+          <motion.div
+            className="space-y-1"
+            variants={{
+              show: {
+                transition: { staggerChildren: 0.05 },
+              },
+            }}
+            initial="hidden"
+            animate="show"
+          >
             {module.lessons.map((lesson) => {
               const completed = completedLessons.includes(lesson.id);
               return (
-                <button
+                <motion.button
                   key={lesson.id}
+                  layout
+                  variants={{
+                    hidden: { opacity: 0, x: -12 },
+                    show: { opacity: 1, x: 0 },
+                  }}
+                  transition={lessonSpring}
+                  whileHover={{ scale: 1.01, x: 4, transition: { type: "spring", stiffness: 400, damping: 20 } }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => onStartLesson(lesson.id)}
                   className={cn(
-                    "w-full text-left flex items-center justify-between px-3 py-2 rounded-lg text-xs transition-all duration-200",
+                    "w-full text-left flex items-center justify-between px-3 py-2 rounded-lg text-xs",
                     completed
                       ? "bg-cyber-green/5 text-cyber-muted"
                       : "bg-glass-white hover:bg-glass-hover text-cyber-text"
@@ -132,11 +173,18 @@ export function ModuleCard({
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     {completed ? (
-                      <span className="text-cyber-green shrink-0 text-xs">✅</span>
+                      <motion.span
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                        className="text-cyber-green shrink-0 text-xs"
+                      >
+                        ✅
+                      </motion.span>
                     ) : (
                       <span
                         className={cn(
-                          "w-3.5 h-3.5 rounded-full border-2 shrink-0 transition-all",
+                          "w-3.5 h-3.5 rounded-full border-2 shrink-0",
                           "border-glass-border"
                         )}
                       />
@@ -145,14 +193,22 @@ export function ModuleCard({
                   </div>
                   <div className="flex items-center gap-2 shrink-0 ml-2">
                     <span className="text-cyber-muted">{lesson.estMinutes}p</span>
-                    {!completed && <span className="text-cyber-accent text-xs">→</span>}
+                    {!completed && (
+                      <motion.span
+                        className="text-cyber-accent text-xs"
+                        animate={{ x: [0, 3, 0] }}
+                        transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                      >
+                        →
+                      </motion.span>
+                    )}
                   </div>
-                </button>
+                </motion.button>
               );
             })}
-          </div>
+          </motion.div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

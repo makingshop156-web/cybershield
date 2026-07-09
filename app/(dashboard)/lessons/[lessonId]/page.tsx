@@ -144,10 +144,11 @@ export default function LessonPage() {
 
           {/* Title */}
           <motion.div
+            layout
             className="mb-6"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
+            transition={{ delay: 0.05, type: "spring", stiffness: 300, damping: 25 }}
           >
             {!focusOn && (
               <div className="text-xs text-cyber-accent font-medium mb-1 uppercase tracking-wider">
@@ -160,10 +161,11 @@ export default function LessonPage() {
           {/* Analogy */}
           {lesson.analogy && (
             <motion.div
-              className="glass-card rounded-xl p-4 mb-6 border-cyber-gold/20"
+              layout
+              className="glass-enhanced rounded-xl p-4 mb-6 border border-amber-500/20"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.1, type: "spring", stiffness: 300, damping: 25 }}
             >
               <div className="flex items-start gap-3">
                 <span className="text-xl shrink-0">💡</span>
@@ -182,10 +184,11 @@ export default function LessonPage() {
           {/* Content */}
           <ErrorBoundary>
             <motion.div
-              className="glass-card rounded-xl p-6 mb-6"
+              layout
+              className="glass-enhanced rounded-xl p-6 mb-6"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15 }}
+              transition={{ delay: 0.15, type: "spring", stiffness: 300, damping: 25 }}
             >
               <div className="text-sm space-y-3">
                 {lesson.content.split("\n").map((line, i) => {
@@ -259,9 +262,10 @@ export default function LessonPage() {
           {/* Exercise */}
           {!done && (
             <motion.div
+              layout
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 300, damping: 25 }}
             >
               <div className="text-xs text-cyber-muted mb-3 uppercase tracking-wider font-medium">
                 📝 Bài tập
@@ -279,10 +283,12 @@ export default function LessonPage() {
           <AnimatePresence>
             {done && (
               <motion.div
+                layout
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="glass-card rounded-xl p-6 text-center border-cyber-green/20"
+                transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                className="glass-enhanced rounded-xl p-6 text-center border border-cyber-green/20"
               >
                 <motion.div
                   className="text-4xl mb-3"
