@@ -18,6 +18,7 @@ export default function ArenaBattle({ match, userId, onLeave }: ArenaBattleProps
   const [myProgress, setMyProgress] = useState(0);
   const [message, setMessage] = useState("");
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const unsubRef = useRef<(() => void) | null>(null);
   const isPlayer1 = match.player1Id === userId;
 
   useEffect(() => {
@@ -37,13 +38,14 @@ export default function ArenaBattle({ match, userId, onLeave }: ArenaBattleProps
 
   useEffect(() => {
     if (phase !== "battle") return;
-    arenaService.subscribeMatch(match.id, (data: MatchData) => {
+    unsubRef.current = arenaService.subscribeMatch(match.id, (data: MatchData) => {
       if (data.status === "completed") {
         const iWon = data.flag_found_by === userId;
         setResult(iWon ? "win" : "lose");
         setPhase("ended");
       }
     });
+    return () => { if (unsubRef.current) { unsubRef.current(); unsubRef.current = null; } };
   }, [phase, match.id, userId]);
 
   const simulateEnemyProgress = useCallback(() => {
