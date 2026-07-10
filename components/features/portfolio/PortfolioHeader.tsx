@@ -69,14 +69,6 @@ export default function PortfolioHeader({ displayName, avatarInitial, topBadge, 
         >
           Copy Link
         </button>
-        <a
-          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(typeof window !== "undefined" ? window.location.href : "")}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg border border-blue-500/30 transition-all text-sm"
-        >
-          LinkedIn
-        </a>
       </div>
     </motion.div>
   );
