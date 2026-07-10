@@ -8,6 +8,7 @@ export type Role = "USER" | "ADMIN" | "OWNER";
 export const OWNER_EMAILS: string[] = [
   "admin@cybershield.local",
   "tuan123@gmail.com",
+  "nvtgm1122011@gmail.com",
 ];
 
 export function isOwnerEmail(email: string): boolean {

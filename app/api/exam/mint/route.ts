@@ -4,7 +4,7 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY || "re_MD6eAmKo_7LkwtFb2MEpPiWMScfpwCL6J");
 
 // Hardcoded list of owner emails for bootstrapping
-const OWNER_EMAILS = ["admin@cybershield.local", "tuan123@gmail.com"];
+const OWNER_EMAILS = ["admin@cybershield.local", "tuan123@gmail.com", "nvtgm1122011@gmail.com"];
 
 function certEmail(score: number, total: number) {
   const pct = Math.round((score / total) * 100);
