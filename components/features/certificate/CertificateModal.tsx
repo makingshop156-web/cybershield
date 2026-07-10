@@ -20,6 +20,7 @@ export default function CertificateModal({ data, open, onClose }: CertModalProps
     if (!certRef.current || !ENABLE_CERT_DOWNLOAD) return;
     setDownloading(true);
     try {
+      await document.fonts.ready;
       const blob = await toPng(certRef.current, {
         quality: 1,
         pixelRatio: 2,
