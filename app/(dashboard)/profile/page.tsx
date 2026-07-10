@@ -11,6 +11,8 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { ENABLE_AUTH } from "@/lib/auth/config";
 import { authService } from "@/lib/auth/auth-service";
 import { useToast } from "@/lib/hooks/useToast";
+import { ENABLE_PUBLIC_PORTFOLIO } from "@/lib/portfolio/config";
+import { portfolioService } from "@/lib/portfolio/portfolio-service";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -27,6 +29,7 @@ export default function ProfilePage() {
   const toast = useToast();
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
   const [saving, setSaving] = useState(false);
+  const [portfolioPublic, setPortfolioPublic] = useState(typeof window !== "undefined" ? portfolioService.isPublic() : false);
 
   const handleSave = async () => {
     if (!displayName.trim()) { toast.warning("Tên không được để trống"); return; }
@@ -109,6 +112,26 @@ export default function ProfilePage() {
                 {saving ? "Đang lưu..." : "Lưu thay đổi"}
               </button>
             </div>
+
+            {ENABLE_PUBLIC_PORTFOLIO && (
+              <div className="flex items-center justify-between pt-3 border-t border-white/10">
+                <div>
+                  <p className="text-sm text-white">Portfolio công khai</p>
+                  <p className="text-xs text-cyber-muted">Hiển thị thành tích tại /p/{user.displayName}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const next = !portfolioPublic;
+                    setPortfolioPublic(next);
+                    portfolioService.setPublic(next);
+                    toast.success(next ? "Portfolio đã công khai" : "Portfolio đã ẩn");
+                  }}
+                  className={`relative w-12 h-6 rounded-full transition-all ${portfolioPublic ? "bg-cyber-accent" : "bg-white/20"}`}
+                >
+                  <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${portfolioPublic ? "left-6" : "left-0.5"}`} />
+                </button>
+              </div>
+            )}
           </motion.div>
         )}
 
