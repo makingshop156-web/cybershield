@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Fira_Code } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
+import { AuthProvider } from "@/lib/hooks/useAuth";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
@@ -66,7 +67,7 @@ export default function RootLayout({
         <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
         <div className="fixed inset-0 bg-radial-glow pointer-events-none z-0" />
         <div className="relative z-10">
-          <ToastProvider>{children}</ToastProvider>
+          <AuthProvider><ToastProvider>{children}</ToastProvider></AuthProvider>
         </div>
       </body>
     </html>
