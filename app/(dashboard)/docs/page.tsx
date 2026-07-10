@@ -32,6 +32,12 @@ export default function DocsPage() {
   const [activeId, setActiveId] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const scrollTo = (id: string) => {
+    setActiveId(id);
+    const el = document.getElementById(`sec-${id}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   // Track scroll position to highlight active section
   useEffect(() => {
     const handleScroll = () => {
@@ -69,7 +75,7 @@ export default function DocsPage() {
         <DocsSidebar
           sections={DOCS_SECTIONS}
           activeId={activeId}
-          onSelect={setActiveId}
+          onSelect={scrollTo}
           open={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
