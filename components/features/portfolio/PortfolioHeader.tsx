@@ -43,7 +43,7 @@ export default function PortfolioHeader({ displayName, avatarInitial, topBadge, 
             {fbUrl && (
               <a href={fbUrl} target="_blank" rel="noopener noreferrer" title="Facebook">
                 <img
-                  src="/facebook.PNG"
+                  src="/facebook.svg"
                   alt="Facebook"
                   className="w-9 h-9 rounded-full object-cover border border-white/10 hover:scale-110 transition-transform duration-300"
                 />
@@ -52,7 +52,7 @@ export default function PortfolioHeader({ displayName, avatarInitial, topBadge, 
             {ttUrl && (
               <a href={ttUrl} target="_blank" rel="noopener noreferrer" title="TikTok">
                 <img
-                  src="/tiktok.PNG"
+                  src="/tiktok.svg"
                   alt="TikTok"
                   className="w-9 h-9 rounded-full object-cover border border-white/10 hover:scale-110 transition-transform duration-300"
                 />
