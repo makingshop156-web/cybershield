@@ -1,52 +1,43 @@
 "use client";
+import ArenaErrorBoundary from "./ErrorBoundary";
 import { motion } from "framer-motion";
 import { useArenaMatch } from "@/lib/hooks/useArenaMatch";
+import type { GameMode } from "@/lib/arena/matchmaking";
 import ArenaBattle from "./ArenaBattle";
+import ModeSelector from "./ModeSelector";
+import EloRadar from "./EloRadar";
+
+function Fallback() {
+  return (
+    <div className="min-h-[70vh] flex flex-col items-center justify-center text-center space-y-4">
+      <div className="text-5xl">⚠️</div>
+      <h2 className="text-xl font-semibold text-cyber-muted">Có lỗi xảy ra</h2>
+      <p className="text-sm text-cyber-muted/70">Vui lòng tải lại trang</p>
+      <button
+        onClick={() => window.location.reload()}
+        className="px-6 py-2.5 bg-cyber-accent/20 hover:bg-cyber-accent/30 text-cyber-accent rounded-lg border border-cyber-accent/30 transition-all text-sm"
+      >
+        Tải lại
+      </button>
+    </div>
+  );
+}
 
 interface ArenaLobbyProps {
   userId: string;
 }
 
-export default function ArenaLobby({ userId }: ArenaLobbyProps) {
-  const { phase, match, elo, findMatch, cancel, leaveBattle } = useArenaMatch(userId);
+function LobbyContent({ userId }: ArenaLobbyProps) {
+  const { phase, match, elo, radar, findMatch, cancel, leaveBattle, busy, errorMsg } = useArenaMatch(userId);
+
+  const handleSelectMode = (mode: GameMode) => {
+    findMatch(mode);
+  };
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center">
-      {phase === "idle" && (
-        <motion.div
-          key="idle"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center space-y-6"
-        >
-          <motion.div
-            className="text-6xl"
-            animate={{ rotate: [0, 5, -5, 0] }}
-            transition={{ duration: 3, repeat: Infinity }}
-          >
-            ⚔️
-          </motion.div>
-          <div>
-            <h1 className="text-3xl font-bold gradient-text">Đấu Trường 1v1</h1>
-            <p className="text-sm text-cyber-muted mt-2">Đối kháng thời gian thực — Ai tìm flag trước sẽ thắng</p>
-          </div>
-          <div className="glass-enhanced p-6 rounded-xl space-y-3 max-w-sm mx-auto">
-            <div className="flex justify-between text-sm">
-              <span className="text-cyber-muted">Elo của bạn</span>
-              <span className="text-cyber-accent font-bold">{elo}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-cyber-muted">Thể thức</span>
-              <span className="text-white">Tìm Flag (CTF)</span>
-            </div>
-          </div>
-          <button
-            onClick={findMatch}
-            className="px-8 py-3 bg-gradient-to-r from-cyber-accent/30 to-purple-500/30 hover:from-cyber-accent/50 hover:to-purple-500/50 text-white rounded-xl border border-cyber-accent/40 transition-all text-base font-semibold"
-          >
-            🔍 Tìm trận
-          </button>
-        </motion.div>
+      {phase === "mode-select" && (
+        <ModeSelector elo={elo} onSelect={handleSelectMode} />
       )}
 
       {phase === "searching" && (
@@ -65,9 +56,13 @@ export default function ArenaLobby({ userId }: ArenaLobbyProps) {
             <h2 className="text-xl font-semibold text-white">Đang tìm đối thủ...</h2>
             <p className="text-sm text-cyber-muted mt-1">Hệ thống đang ghép trận cho bạn</p>
           </div>
+          <div className="flex justify-center">
+            <EloRadar activePlayers={radar.activePlayers} />
+          </div>
           <button
             onClick={cancel}
-            className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg border border-red-500/30 transition-all text-sm"
+            disabled={busy}
+            className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg border border-red-500/30 transition-all text-sm disabled:opacity-50"
           >
             ✕ Hủy tìm trận
           </button>
@@ -98,6 +93,33 @@ export default function ArenaLobby({ userId }: ArenaLobbyProps) {
           <ArenaBattle match={match} userId={userId} onLeave={leaveBattle} />
         </motion.div>
       )}
+
+      {phase === "error" && (
+        <motion.div
+          key="error"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-center space-y-4"
+        >
+          <div className="text-5xl">⚠️</div>
+          <h2 className="text-xl font-semibold text-red-400">Lỗi kết nối</h2>
+          <p className="text-sm text-cyber-muted">{errorMsg || "Không thể kết nối đến máy chủ"}</p>
+          <button
+            onClick={cancel}
+            className="px-6 py-2.5 bg-cyber-accent/20 hover:bg-cyber-accent/30 text-cyber-accent rounded-lg border border-cyber-accent/30 transition-all text-sm"
+          >
+            Thử lại
+          </button>
+        </motion.div>
+      )}
     </div>
+  );
+}
+
+export default function ArenaLobby({ userId }: ArenaLobbyProps) {
+  return (
+    <ArenaErrorBoundary fallback={<Fallback />}>
+      <LobbyContent userId={userId} />
+    </ArenaErrorBoundary>
   );
 }

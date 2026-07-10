@@ -4,17 +4,22 @@ import { TopBar } from "@/components/layout/TopBar";
 import { useProgress } from "@/lib/hooks";
 import ArenaLobby from "@/components/features/arena/ArenaLobby";
 
-export default function ArenaPage() {
-  const { progress, loaded } = useProgress();
-
-  const userId = useMemo(() => {
+function getUserId(): string {
+  try {
     if (typeof window === "undefined") return "guest";
     const stored = localStorage.getItem("cybershield-user-id");
     if (stored) return stored;
     const id = "user_" + Math.random().toString(36).substring(2, 10);
     localStorage.setItem("cybershield-user-id", id);
     return id;
-  }, []);
+  } catch {
+    return "guest_" + Math.random().toString(36).substring(2, 10);
+  }
+}
+
+export default function ArenaPage() {
+  const { progress, loaded } = useProgress();
+  const userId = useMemo(() => getUserId(), []);
 
   if (!loaded) {
     return (
