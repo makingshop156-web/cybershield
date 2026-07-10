@@ -7,66 +7,116 @@ interface CertProps {
   data: CertificateData;
 }
 
+const GoldSeal = () => (
+  <svg width="80" height="80" viewBox="0 0 80 80" className="shrink-0">
+    <defs>
+      <radialGradient id="goldGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stopColor="#fce181" />
+        <stop offset="50%" stopColor="#d4a017" />
+        <stop offset="100%" stopColor="#b8860b" />
+      </radialGradient>
+      <filter id="goldShadow">
+        <feDropShadow dx="0" dy="1" stdDeviation="2" floodColor="#d4a017" floodOpacity="0.4" />
+      </filter>
+    </defs>
+    <circle cx="40" cy="40" r="38" fill="none" stroke="url(#goldGrad)" strokeWidth="2" filter="url(#goldShadow)" />
+    <circle cx="40" cy="40" r="34" fill="none" stroke="url(#goldGrad)" strokeWidth="1" strokeDasharray="3 3" />
+    <text x="40" y="30" textAnchor="middle" fill="url(#goldGrad)" fontSize="9" fontWeight="bold" fontFamily="serif">CYBER</text>
+    <text x="40" y="42" textAnchor="middle" fill="url(#goldGrad)" fontSize="11" fontWeight="bold" fontFamily="serif">SHIELD</text>
+    <text x="40" y="55" textAnchor="middle" fill="url(#goldGrad)" fontSize="8" fontFamily="serif">★ SEAL ★</text>
+  </svg>
+);
+
 const CertificatePreview = forwardRef<HTMLDivElement, CertProps>(({ data }, ref) => {
   const pct = data.score != null && data.total != null ? Math.round((data.score / data.total) * 100) : null;
 
   return (
     <div
       ref={ref}
-      className="relative w-full max-w-[600px] mx-auto bg-[#0a0e17] rounded-2xl p-[3px]"
+      className="relative w-full max-w-[640px] mx-auto bg-white rounded-lg overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, #00ff41, #00b8ff, #00ff41, #7000ff)",
-        backgroundSize: "300% 300%",
-        boxShadow: "0 0 40px rgba(0,255,65,0.15), 0 0 80px rgba(0,184,255,0.1)",
+        boxShadow: "0 4px 40px rgba(0,0,0,0.12), 0 1px 3px rgba(0,0,0,0.06)",
+        fontFamily: "'Playfair Display', 'Georgia', serif",
       }}
     >
-      <div className="bg-[#0d1117] rounded-2xl p-8 sm:p-10 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "radial-gradient(circle at 25% 25%, #00ff41 0%, transparent 50%), radial-gradient(circle at 75% 75%, #00b8ff 0%, transparent 50%)",
-        }} />
+      {/* Decorative border */}
+      <div className="absolute inset-0 pointer-events-none" style={{
+        border: "8px solid transparent",
+        borderImage: "linear-gradient(135deg, #b8860b 0%, #fce181 25%, #d4a017 50%, #fce181 75%, #b8860b 100%) 1",
+      }} />
+      <div className="absolute inset-[14px] pointer-events-none border border-[#d4a017]/30 rounded-[2px]" />
 
-        <div className="relative z-10 text-center space-y-5">
-          <pre className="text-[8px] sm:text-[10px] leading-tight text-[#00ff41] font-mono tracking-wider select-none" style={{ lineHeight: 1.2 }}>
-{`  ██████  ██▓   ▓█████▄  ██▓▓█████ ██▀███
-▒██    ▒ ▓██▒   ▒██▀ ██▌▓██▒▓█   ▀▓██ ▒ ██▒
-░ ▓██▄   ▒██░   ░██   █▌▒██▒▒███  ▓██ ░▄█ ▒
-  ▒   ██▒▒██░   ░▓█▄   ▌░██░▒▓█  ▄▒██▀▀█▄
-▒██████▒▒░██████▒░▒████▓ ░██░░▒████░██▓ ▒██▒
-▒ ▒▓▒ ▒ ░░ ▒░▓  ░ ▒▒▓  ▒ ░▓  ░░ ▒░░ ▒▓ ░▒▓░
-░ ░▒  ░ ░░ ░ ▒  ░ ░ ▒  ▒  ▒ ░ ░ ░  ░ ░▒ ░ ▒░
-░  ░  ░    ░ ░    ░ ░  ░  ▒ ░   ░    ░░   ░
-      ░      ░  ░   ░     ░     ░  ░  ░`}
-          </pre>
+      {/* Corner ornaments */}
+      <div className="absolute top-5 left-5 w-8 h-8 border-t-2 border-l-2 border-[#d4a017]/50" />
+      <div className="absolute top-5 right-5 w-8 h-8 border-t-2 border-r-2 border-[#d4a017]/50" />
+      <div className="absolute bottom-5 left-5 w-8 h-8 border-b-2 border-l-2 border-[#d4a017]/50" />
+      <div className="absolute bottom-5 right-5 w-8 h-8 border-b-2 border-r-2 border-[#d4a017]/50" />
 
-          <div className="space-y-1">
-            <p className="text-[10px] uppercase tracking-[0.3em] text-[#00ff41]/60 font-mono">Chứng chỉ điện tử</p>
-            <h2 className="text-lg sm:text-xl font-bold text-white font-sans">{data.courseName}</h2>
+      <div className="relative z-10 px-10 sm:px-14 py-12 text-center">
+        {/* Gold seal */}
+        <div className="flex justify-center mb-6">
+          <GoldSeal />
+        </div>
+
+        <p className="text-xs sm:text-sm tracking-[0.3em] text-[#b8860b] uppercase font-sans font-medium mb-4">
+          Certificate of Excellence
+        </p>
+
+        <h1 className="text-2xl sm:text-3xl font-bold text-[#1a1a2e] mb-2" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+          {data.courseName}
+        </h1>
+
+        <div className="w-24 h-[2px] bg-gradient-to-r from-[#d4a017] via-[#fce181] to-[#d4a017] mx-auto my-5" />
+
+        <p className="text-sm text-[#666] font-sans leading-relaxed max-w-md mx-auto">
+          This is to proudly certify that
+        </p>
+
+        <p className="text-3xl sm:text-4xl font-bold text-[#1a1a2e] my-4" style={{ fontFamily: "'Playfair Display', 'Georgia', serif" }}>
+          {data.recipientName}
+        </p>
+
+        <p className="text-sm text-[#666] font-sans leading-relaxed max-w-lg mx-auto">
+          has successfully completed the rigorous requirements of the above-named program,
+          demonstrating exceptional proficiency in cybersecurity fundamentals and ethical hacking methodologies.
+        </p>
+
+        {pct != null && (
+          <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 bg-[#fdf6e3] border border-[#d4a017]/30 rounded-full">
+            <span className="text-xs text-[#8b6914] font-sans">Final Score:</span>
+            <span className="text-sm font-bold text-[#b8860b]" style={{ fontFamily: "'Playfair Display', serif" }}>
+              {data.score}/{data.total} ({pct}%)
+            </span>
           </div>
+        )}
 
-          <div className="w-16 h-[2px] bg-gradient-to-r from-transparent via-[#00ff41] to-transparent mx-auto" />
-
-          <div className="space-y-1">
-            <p className="text-[11px] text-[#8b949e] font-mono">Cấp cho</p>
-            <p className="text-2xl sm:text-3xl font-bold text-white font-sans tracking-wide">{data.recipientName}</p>
+        <div className="flex items-center justify-center gap-8 mt-8 text-xs text-[#888] font-sans">
+          <div className="text-center">
+            <p className="font-bold text-[#555] mb-1">Issue Date</p>
+            <p>{formatDate(data.issueDate)}</p>
           </div>
-
-          {pct != null && (
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#00ff41]/10 border border-[#00ff41]/20">
-              <span className="text-[11px] text-[#8b949e] font-mono">Kết quả:</span>
-              <span className="text-sm font-bold text-[#00ff41] font-mono">{data.score}/{data.total} ({pct}%)</span>
-            </div>
-          )}
-
-          <div className="flex items-center justify-center gap-6 text-[10px] font-mono text-[#8b949e]">
-            <span>Ngày: {formatDate(data.issueDate)}</span>
-            <span className="w-px h-3 bg-[#30363d]" />
-            <span>ID: {data.hashId}</span>
-          </div>
-
-          <div className="pt-2 border-t border-[#21262d]">
-            <p className="text-[9px] text-[#484f58] font-mono">cybershield-nu-one.vercel.app</p>
+          <div className="w-px h-8 bg-[#ddd]" />
+          <div className="text-center">
+            <p className="font-bold text-[#555] mb-1">Certificate ID</p>
+            <p className="font-mono text-[10px]">{data.hashId}</p>
           </div>
         </div>
+
+        {/* Signature line */}
+        <div className="mt-8 pt-6 border-t border-[#e0d5c1]">
+          <div className="flex justify-center mb-1">
+            <svg width="160" height="36" viewBox="0 0 160 36" className="opacity-50">
+              <path d="M10 28 C30 10, 50 30, 70 18 C80 12, 90 22, 100 16 C110 10, 120 26, 130 20 C140 14, 150 24, 155 18"
+                fill="none" stroke="#333" strokeWidth="1.5" strokeLinecap="round" style={{ filter: "blur(0.3px)" }} />
+            </svg>
+          </div>
+          <p className="text-xs font-bold text-[#555] font-sans">Founder & Lead Instructor</p>
+          <p className="text-[10px] text-[#999] font-sans">CyberShield Academy</p>
+        </div>
+
+        <p className="mt-6 text-[9px] text-[#bbb] font-sans tracking-wide">
+          cybershield-nu-one.vercel.app &bull; Verified Digital Certificate
+        </p>
       </div>
     </div>
   );

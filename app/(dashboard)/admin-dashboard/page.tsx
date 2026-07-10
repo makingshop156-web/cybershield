@@ -31,7 +31,7 @@ function AdminContent() {
     setDownloading(true);
     try {
       const blob = await toPng(certRef.current, {
-        quality: 1, pixelRatio: 2, backgroundColor: "#0a0e17",
+        quality: 1, pixelRatio: 2, backgroundColor: "#ffffff",
       });
       const link = document.createElement("a");
       link.download = `certificate-${cert?.hashId ?? "preview"}.png`;

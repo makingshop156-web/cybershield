@@ -23,8 +23,8 @@ export default function CertificateModal({ data, open, onClose }: CertModalProps
       const blob = await toPng(certRef.current, {
         quality: 1,
         pixelRatio: 2,
-        backgroundColor: "#0a0e17",
-        style: { fontFamily: "'Courier New', monospace" },
+        backgroundColor: "#ffffff",
+        style: { fontFamily: "'Playfair Display', 'Georgia', serif" },
       });
       const link = document.createElement("a");
       link.download = `certificate-${data.hashId}.png`;

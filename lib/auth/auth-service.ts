@@ -1,6 +1,10 @@
 import { ENABLE_AUTH, SESSION_KEY, USERS_KEY, OWNER_EMAILS, type Role } from "./config";
 import type { AuthUser, AuthSession } from "./types";
 
+const PROGRESS_KEY = "cybershield_progress_v2";
+const SPEEDRUN_KEY = "cybershield_speedrun_v2";
+const USER_ID_KEY = "cybershield-user-id";
+
 interface StoredUser {
   id: string;
   email: string;
@@ -77,6 +81,9 @@ export const authService = {
 
   async logout(): Promise<void> {
     writeSession(null);
+    [PROGRESS_KEY, SPEEDRUN_KEY, USER_ID_KEY].forEach((k) => {
+      try { localStorage.removeItem(k); } catch { /* ignore */ }
+    });
   },
 
   async getCurrentUser(): Promise<AuthUser | null> {
