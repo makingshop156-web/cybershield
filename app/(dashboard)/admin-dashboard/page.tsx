@@ -31,7 +31,7 @@ function AdminContent() {
     setDownloading(true);
     try {
       const blob = await toPng(certRef.current, {
-        quality: 1, pixelRatio: 2, backgroundColor: "#ffffff",
+        quality: 1, pixelRatio: 2, backgroundColor: "#faf8f5", cacheBust: true,
       });
       const link = document.createElement("a");
       link.download = `certificate-${cert?.hashId ?? "preview"}.png`;
@@ -58,8 +58,8 @@ function AdminContent() {
         </span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="glass-enhanced rounded-xl p-6 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-2 glass-enhanced rounded-xl p-6 space-y-4">
           <h2 className="text-lg font-semibold text-white">📜 Cấp chứng chỉ</h2>
           <p className="text-xs text-cyber-muted">Nhập thông tin và phát hành chứng chỉ ngay lập tức.</p>
 
@@ -93,7 +93,7 @@ function AdminContent() {
           </div>
         </div>
 
-        <div className="flex flex-col items-center justify-center space-y-4">
+        <div className="lg:col-span-3 flex flex-col items-center justify-center space-y-4">
           {cert ? (
             <>
               <CertificatePreview ref={certRef} data={cert} />

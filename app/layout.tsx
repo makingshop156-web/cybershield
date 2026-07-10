@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Fira_Code, Playfair_Display } from "next/font/google";
+import { Inter, Fira_Code, Playfair_Display, Great_Vibes } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
 import { AuthProvider } from "@/lib/hooks/useAuth";
@@ -18,6 +18,21 @@ const firaCode = Fira_Code({
   display: "swap",
   preload: true,
   fallback: ["JetBrains Mono", "monospace"],
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+  preload: true,
+});
+
+const greatVibes = Great_Vibes({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-great-vibes",
+  display: "swap",
+  preload: true,
 });
 
 export const metadata: Metadata = {
@@ -50,7 +65,7 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
-      className={`${inter.variable} ${firaCode.variable}`}
+      className={`${inter.variable} ${firaCode.variable} ${playfair.variable} ${greatVibes.variable}`}
       suppressHydrationWarning
     >
       <head>

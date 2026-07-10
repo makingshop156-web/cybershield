@@ -23,8 +23,8 @@ export default function CertificateModal({ data, open, onClose }: CertModalProps
       const blob = await toPng(certRef.current, {
         quality: 1,
         pixelRatio: 2,
-        backgroundColor: "#ffffff",
-        style: { fontFamily: "'Playfair Display', 'Georgia', serif" },
+        backgroundColor: "#faf8f5",
+        cacheBust: true,
       });
       const link = document.createElement("a");
       link.download = `certificate-${data.hashId}.png`;
@@ -51,7 +51,7 @@ export default function CertificateModal({ data, open, onClose }: CertModalProps
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="w-full max-w-[640px]"
+            className="w-full max-w-[820px]"
             onClick={(e) => e.stopPropagation()}
           >
             <CertificatePreview ref={certRef} data={data} />
