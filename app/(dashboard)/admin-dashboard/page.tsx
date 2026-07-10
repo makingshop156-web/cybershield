@@ -16,8 +16,9 @@ function AdminContent() {
     setSending(true);
     const res = await authService.mintCertificate(email, user?.id ?? "");
     setSending(false);
-    if (res.ok) toast.success("Đã cấp chứng chỉ thành công!");
-    else toast.error(res.error ?? "Lỗi khi cấp chứng chỉ");
+    if (!res.ok) { toast.error(res.error ?? "Lỗi khi cấp chứng chỉ"); return; }
+    if (res.emailSent) toast.success("Chứng chỉ đã gửi qua email thành công!");
+    else toast.warning("Đã lưu kết quả, chứng chỉ sẽ được gửi sau");
   };
 
   return (

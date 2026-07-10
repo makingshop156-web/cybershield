@@ -84,7 +84,7 @@ export const authService = {
     return session?.user ?? null;
   },
 
-  async mintCertificate(email: string, userId: string): Promise<{ ok: boolean; error?: string }> {
+  async mintCertificate(email: string, userId: string): Promise<{ ok: boolean; emailSent?: boolean; error?: string }> {
     const session = readSession();
     if (!session || session.user.role !== "OWNER") {
       return { ok: false, error: "Unauthorized — OWNER role required" };
@@ -100,7 +100,7 @@ export const authService = {
         body: JSON.stringify({ email, score: 10, total: 10 }),
       });
       const data = await res.json();
-      return { ok: true, ...data };
+      return { ok: true, emailSent: data.email === "sent" };
     } catch {
       return { ok: false, error: "Không thể gửi chứng chỉ" };
     }
