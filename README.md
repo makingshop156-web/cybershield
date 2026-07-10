@@ -1,36 +1,64 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CyberShield — Học bảo mật từ thực hành
 
-## Getting Started
+[![Vercel](https://img.shields.io/badge/deploy-vercel-22d3ee?logo=vercel)](https://cybershield-nu-one.vercel.app)
+[![Next.js](https://img.shields.io/badge/Next.js-14-000?logo=next.js)](https://nextjs.org)
+[![Supabase](https://img.shields.io/badge/Supabase-Realtime-3ecf8e?logo=supabase)](https://supabase.com)
 
-First, run the development server:
+Nền tảng E-learning Cybersecurity với terminal ảo, đấu trường 1v1 real-time, CTF gamification, và lộ trình từ zero đến hero.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Kiến trúc
+
+```
+├── app/               # Next.js 14 App Router
+│   ├── (dashboard)/   # Roadmap, Arena, Lab, Docs, Profile
+│   └── layout.tsx     # Root layout + PWA meta
+├── components/
+│   ├── features/      # Terminal, Arena, Docs, Lesson...
+│   └── ui/            # Button, Toast, GlassCard...
+├── lib/
+│   ├── hooks/         # useArenaMatch, useArenaBattle, useLessonData...
+│   ├── arena/         # Arena service + Elo calculation
+│   ├── security/      # Sanitize + Rate limit
+│   └── supabase/      # Client singleton (mock fallback)
+└── supabase/          # SQL migration scripts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tính năng chính
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Tính năng | Mô tả |
+|---|---|
+| **Terminal ảo** | Xterm.js với virtual filesystem, 30+ lệnh, 3 CTF flag ẩn |
+| **Đấu trường 1v1** | Matchmaking real-time, CTF duel, Elo ranking (K=32) |
+| **Lộ trình** | 12 module (cơ bản + nâng cao), 19+ bài học, badge system |
+| **PWA** | Manifest, standalone mode, install prompt |
+| **Docs** | Hướng dẫn tích hợp sẵn tại `/docs` |
+| **Security** | Irony Guard — sanitize input, rate limit, CSP headers |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Bắt đầu
 
-## Learn More
+```bash
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # Production build
+npm run lint       # ESLint
+npm run type-check # TypeScript
+```
 
-To learn more about Next.js, take a look at the following resources:
+### Biến môi trường
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Tạo `.env.local`:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
 
-## Deploy on Vercel
+Không cần Supabase để chạy — hệ thống tự động fallback sang offline mode với local store.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+vercel deploy --prod
+```
+
+Production: [https://cybershield-nu-one.vercel.app](https://cybershield-nu-one.vercel.app)

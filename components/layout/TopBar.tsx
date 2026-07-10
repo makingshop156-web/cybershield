@@ -11,11 +11,13 @@ interface TopBarProps {
   total: number;
 }
 
+// Docs module — easy to toggle via DOCS_ENABLED in config.ts
 const NAV_ITEMS = [
   { href: "/roadmap", label: "Lộ trình" },
   { href: "/advanced-roadmap", label: "Nâng cao" },
   { href: "/arena", label: "Đấu trường" },
   { href: "/lab", label: "Lab" },
+  { href: "/docs", label: "Docs" },
   { href: "/profile", label: "Hồ sơ" },
 ] as const;
 
