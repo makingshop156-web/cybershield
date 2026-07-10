@@ -2,11 +2,16 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useExam } from "@/lib/hooks/useExam";
 import { useCountdown } from "@/lib/hooks/useCountdown";
+import { useAntiCheat } from "@/lib/hooks/useAntiCheat";
 import { ENABLE_EXAM_MODE } from "@/lib/exam/config";
 import { useAuth } from "@/lib/hooks/useAuth";
 import ExamHeader from "./ExamHeader";
 import ExamQuestion from "./ExamQuestion";
 import ExamResultView from "./ExamResult";
+import LockdownWrapper from "./LockdownWrapper";
+import AntiCheatModal from "./AntiCheatModal";
+
+const MAX_STRIKES = 3;
 
 interface ExamPageProps {
   userId: string;
@@ -15,9 +20,13 @@ interface ExamPageProps {
 export default function ExamPage({ userId }: ExamPageProps) {
   const { user } = useAuth();
   const {
-    phase, answers, result, tabSwitches, warning,
-    questions, duration, start, setAnswer, submit, expire,
+    phase, answers, result,
+    questions, duration, start, setAnswer, submit, forceSubmit, expire,
   } = useExam(userId);
+
+  const { strikes, showWarning, dismissWarning } = useAntiCheat(
+    phase === "running" ? forceSubmit : () => {}
+  );
 
   const countdown = useCountdown(duration);
 
@@ -35,6 +44,13 @@ export default function ExamPage({ userId }: ExamPageProps) {
 
   return (
     <div className="min-h-[70vh] max-w-2xl mx-auto">
+      <AntiCheatModal
+        show={showWarning}
+        strikes={strikes}
+        maxStrikes={MAX_STRIKES}
+        onDismiss={dismissWarning}
+      />
+
       <AnimatePresence mode="wait">
         {phase === "idle" && (
           <motion.div
@@ -50,10 +66,11 @@ export default function ExamPage({ userId }: ExamPageProps) {
               Thời gian: <strong className="text-cyber-accent">{duration} phút</strong>.
               Điểm đỗ: <strong className="text-green-400">70%</strong>.
             </p>
-            <div className="glass-enhanced p-4 rounded-xl max-w-sm text-left text-sm text-cyber-muted space-y-2">
+            <div className="glass-enhanced p-4 rounded-xl max-w-sm text-left text-sm text-cyber-muted space-y-1.5">
               <p>⚠️ Không rời tab trong khi thi</p>
               <p>⚠️ Không refresh trang</p>
               <p>⚠️ Hết giờ tự động nộp bài</p>
+              <p>⚠️ Gian lận sẽ bị nộp bài với điểm 0</p>
             </div>
             <button
               onClick={start}
@@ -66,29 +83,31 @@ export default function ExamPage({ userId }: ExamPageProps) {
 
         {phase === "running" && (
           <motion.div key="exam" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-            <ExamHeader
-              mins={countdown.mins}
-              secs={countdown.secs}
-              tabSwitches={tabSwitches}
-              warning={warning}
-            />
-            <div className="space-y-1">
-              {questions.map((q, i) => (
-                <ExamQuestion
-                  key={q.id} q={q} index={i}
-                  value={answers[q.id] ?? ""}
-                  onChange={(val) => setAnswer(q.id, val)}
-                />
-              ))}
-            </div>
-            <div className="flex justify-center mt-8 pb-12">
-              <button
-                onClick={submit}
-                className="px-8 py-3 bg-gradient-to-r from-green-500/30 to-emerald-500/30 hover:from-green-500/50 hover:to-emerald-500/50 text-white rounded-xl border border-green-500/40 transition-all text-base font-semibold"
-              >
-                📨 Nộp bài
-              </button>
-            </div>
+            <LockdownWrapper>
+              <ExamHeader
+                mins={countdown.mins}
+                secs={countdown.secs}
+                tabSwitches={strikes}
+                warning={showWarning ? "⚠️ Phát hiện rời tab!" : ""}
+              />
+              <div className="space-y-1">
+                {questions.map((q, i) => (
+                  <ExamQuestion
+                    key={q.id} q={q} index={i}
+                    value={answers[q.id] ?? ""}
+                    onChange={(val) => setAnswer(q.id, val)}
+                  />
+                ))}
+              </div>
+              <div className="flex justify-center mt-8 pb-12">
+                <button
+                  onClick={submit}
+                  className="px-8 py-3 bg-gradient-to-r from-green-500/30 to-emerald-500/30 hover:from-green-500/50 hover:to-emerald-500/50 text-white rounded-xl border border-green-500/40 transition-all text-base font-semibold"
+                >
+                  📨 Nộp bài
+                </button>
+              </div>
+            </LockdownWrapper>
           </motion.div>
         )}
 
