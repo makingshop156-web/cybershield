@@ -2,7 +2,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { modules, glossary } from "@/lib/data";
+import { modules, advancedModules, glossary } from "@/lib/data";
 import { useProgress } from "@/lib/hooks";
 import { TopBar } from "@/components/layout/TopBar";
 import { GlossaryToggle } from "@/components/features/GlossaryToggle";
@@ -68,20 +68,21 @@ export default function LessonPage() {
         if (l.id === params.lessonId) return l;
       }
     }
+    for (const mod of advancedModules) {
+      for (const l of mod.lessons) {
+        if (l.id === params.lessonId) return l;
+      }
+    }
     return null;
   }, [params.lessonId]);
 
   useEffect(() => {
-    if (
-      loaded &&
-      typeof params.lessonId === "string" &&
-      progress.completedLessons.includes(params.lessonId)
-    ) {
+    if (loaded && lesson && progress.completedLessons.includes(lesson.id)) {
       setDone(true);
     }
-  }, [loaded, progress.completedLessons, params.lessonId]);
+  }, [loaded, lesson, progress.completedLessons]);
 
-  if (!loaded || !lesson) {
+  if (!loaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -92,7 +93,28 @@ export default function LessonPage() {
     );
   }
 
+  if (!lesson) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3 glass-enhanced p-8 rounded-xl max-w-md text-center">
+          <span className="text-4xl">🔍</span>
+          <h2 className="text-xl font-semibold text-white">Không tìm thấy bài học</h2>
+          <p className="text-sm text-cyber-muted">
+            Bài học &ldquo;{params.lessonId}&rdquo; không tồn tại hoặc đã bị xóa.
+          </p>
+          <button
+            onClick={() => router.back()}
+            className="mt-2 px-4 py-2 bg-cyber-accent/20 hover:bg-cyber-accent/30 text-cyber-accent rounded-lg transition-colors text-sm"
+          >
+            ← Quay lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const handleComplete = () => {
+    if (!lesson) return;
     completeLesson(lesson.id);
     setDone(true);
   };

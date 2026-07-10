@@ -14,6 +14,7 @@ interface TopBarProps {
 const NAV_ITEMS = [
   { href: "/roadmap", label: "Lộ trình" },
   { href: "/advanced-roadmap", label: "Nâng cao" },
+  { href: "/arena", label: "Đấu trường" },
   { href: "/lab", label: "Lab" },
   { href: "/profile", label: "Hồ sơ" },
 ] as const;
