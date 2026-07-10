@@ -11,8 +11,8 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { ENABLE_AUTH } from "@/lib/auth/config";
 import { authService } from "@/lib/auth/auth-service";
 import { useToast } from "@/lib/hooks/useToast";
-import { ENABLE_PUBLIC_PORTFOLIO } from "@/lib/portfolio/config";
-import { portfolioService } from "@/lib/portfolio/portfolio-service";
+import { ENABLE_PUBLIC_PORTFOLIO, validateSocialUrl, type SocialLinks, defaultSocialLinks } from "@/lib/portfolio/config";
+import { portfolioService, saveSocialLinks, loadSocialLinks } from "@/lib/portfolio/portfolio-service";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -30,6 +30,8 @@ export default function ProfilePage() {
   const [displayName, setDisplayName] = useState(user?.displayName ?? "");
   const [saving, setSaving] = useState(false);
   const [portfolioPublic, setPortfolioPublic] = useState(typeof window !== "undefined" ? portfolioService.isPublic() : false);
+  const [socialLinks, setSocialLinks] = useState<SocialLinks>(typeof window !== "undefined" ? loadSocialLinks() : defaultSocialLinks);
+  const [socialErrors, setSocialErrors] = useState<Partial<Record<keyof SocialLinks, string>>>({});
 
   const handleSave = async () => {
     if (!displayName.trim()) { toast.warning("Tên không được để trống"); return; }
@@ -104,13 +106,71 @@ export default function ProfilePage() {
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-cyber-muted/50 focus:outline-none focus:border-cyber-accent/50 transition-all"
                 />
               </div>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-5 py-2 bg-cyber-accent/20 hover:bg-cyber-accent/30 text-cyber-accent rounded-lg border border-cyber-accent/30 transition-all text-sm disabled:opacity-50"
-              >
-                {saving ? "Đang lưu..." : "Lưu thay đổi"}
-              </button>
+
+              <div>
+                <label className="block text-xs text-cyber-muted mb-1">Facebook</label>
+                <input
+                  type="url"
+                  value={socialLinks.facebookUrl}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSocialLinks((prev) => ({ ...prev, facebookUrl: val }));
+                    if (val && !validateSocialUrl("facebookUrl", val))
+                      setSocialErrors((prev) => ({ ...prev, facebookUrl: "URL Facebook không hợp lệ (vd: https://facebook.com/username)" }));
+                    else
+                      setSocialErrors((prev) => ({ ...prev, facebookUrl: "" }));
+                  }}
+                  placeholder="https://facebook.com/username"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-cyber-muted/50 focus:outline-none focus:border-[#1877F2]/50 transition-all"
+                />
+                {socialErrors.facebookUrl && (
+                  <p className="text-[10px] text-red-400 mt-1">{socialErrors.facebookUrl}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-xs text-cyber-muted mb-1">TikTok</label>
+                <input
+                  type="url"
+                  value={socialLinks.tiktokUrl}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setSocialLinks((prev) => ({ ...prev, tiktokUrl: val }));
+                    if (val && !validateSocialUrl("tiktokUrl", val))
+                      setSocialErrors((prev) => ({ ...prev, tiktokUrl: "URL TikTok không hợp lệ (vd: https://tiktok.com/@username)" }));
+                    else
+                      setSocialErrors((prev) => ({ ...prev, tiktokUrl: "" }));
+                  }}
+                  placeholder="https://tiktok.com/@username"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-cyber-muted/50 focus:outline-none focus:border-[#000]/50 transition-all"
+                />
+                {socialErrors.tiktokUrl && (
+                  <p className="text-[10px] text-red-400 mt-1">{socialErrors.tiktokUrl}</p>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="px-5 py-2 bg-cyber-accent/20 hover:bg-cyber-accent/30 text-cyber-accent rounded-lg border border-cyber-accent/30 transition-all text-sm disabled:opacity-50"
+                >
+                  {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                </button>
+                <button
+                  onClick={() => {
+                    if (socialErrors.facebookUrl || socialErrors.tiktokUrl) {
+                      toast.warning("Vui lòng sửa lỗi trước khi lưu");
+                      return;
+                    }
+                    saveSocialLinks(socialLinks);
+                    toast.success("Đã lưu liên kết mạng xã hội");
+                  }}
+                  className="px-5 py-2 bg-[#1877F2]/20 hover:bg-[#1877F2]/30 text-[#1877F2] rounded-lg border border-[#1877F2]/30 transition-all text-sm"
+                >
+                  Lưu liên kết MXH
+                </button>
+              </div>
             </div>
 
             {ENABLE_PUBLIC_PORTFOLIO && (

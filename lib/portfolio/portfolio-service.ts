@@ -1,4 +1,21 @@
-import { PORTFOLIO_VISIBILITY_KEY, generateHeatmapData, type PortfolioData } from "./config";
+import { PORTFOLIO_VISIBILITY_KEY, SOCIAL_LINKS_KEY, generateHeatmapData, type PortfolioData, type SocialLinks, defaultSocialLinks } from "./config";
+
+function getSocialLinks(): SocialLinks {
+  try {
+    const raw = localStorage.getItem(SOCIAL_LINKS_KEY);
+    if (raw) return { ...defaultSocialLinks, ...JSON.parse(raw) };
+  } catch { /* ignore */ }
+  return defaultSocialLinks;
+}
+
+export function saveSocialLinks(links: SocialLinks) {
+  try { localStorage.setItem(SOCIAL_LINKS_KEY, JSON.stringify(links)); }
+  catch { /* ignore */ }
+}
+
+export function loadSocialLinks(): SocialLinks {
+  return getSocialLinks();
+}
 
 export const portfolioService = {
   isPublic(): boolean {
@@ -14,7 +31,6 @@ export const portfolioService = {
   getPortfolio(username: string): PortfolioData | null {
     try {
       const raw = localStorage.getItem("cybershield_progress_v2");
-      const usersRaw = localStorage.getItem("cybershield-users");
       const sessionRaw = localStorage.getItem("cybershield-session");
 
       let displayName = username;
@@ -56,6 +72,7 @@ export const portfolioService = {
         labsCompleted: completedCount,
         heatmap: generateHeatmapData(),
         certificates: [],
+        socialLinks: getSocialLinks(),
       };
     } catch {
       return null;

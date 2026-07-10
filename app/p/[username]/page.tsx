@@ -43,6 +43,7 @@ export default function PublicPortfolioPage() {
           avatarInitial={data.avatarInitial}
           topBadge={data.topBadge}
           username={data.username}
+          socialLinks={data.socialLinks}
         />
         <PortfolioStats
           elo={data.elo}

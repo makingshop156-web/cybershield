@@ -1,5 +1,28 @@
 export const ENABLE_PUBLIC_PORTFOLIO = true;
 export const PORTFOLIO_VISIBILITY_KEY = "cybershield-portfolio-public";
+export const SOCIAL_LINKS_KEY = "cybershield-social-links";
+
+export interface SocialLinks {
+  facebookUrl: string;
+  tiktokUrl: string;
+}
+
+export const defaultSocialLinks: SocialLinks = {
+  facebookUrl: "",
+  tiktokUrl: "",
+};
+
+export function validateSocialUrl(key: keyof SocialLinks, value: string): boolean {
+  if (!value.trim()) return true;
+  switch (key) {
+    case "facebookUrl":
+      return /^https?:\/\/(www\.)?(facebook\.com|fb\.com)\/.+/i.test(value);
+    case "tiktokUrl":
+      return /^https?:\/\/(www\.)?tiktok\.com\/@.+/i.test(value);
+    default:
+      return false;
+  }
+}
 
 export interface PortfolioData {
   username: string;
@@ -11,6 +34,7 @@ export interface PortfolioData {
   labsCompleted: number;
   heatmap: Record<string, number>;
   certificates: PortfolioCert[];
+  socialLinks: SocialLinks;
 }
 
 export interface PortfolioCert {
