@@ -1,5 +1,4 @@
-import { ENABLE_AUTH } from "@/lib/auth/config";
-
+export const ENABLE_CERTIFICATE = true;
 export const ENABLE_CERT_DOWNLOAD = true;
 
 export interface CertificateData {
