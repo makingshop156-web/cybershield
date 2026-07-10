@@ -1,28 +1,50 @@
 "use client";
+import { useState, useRef } from "react";
+import { motion } from "framer-motion";
+import { toPng } from "html-to-image";
 import { AdminRoute } from "@/components/features/auth/ProtectedRoute";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { useToast } from "@/lib/hooks/useToast";
-import { authService } from "@/lib/auth/auth-service";
-import { useState } from "react";
+import { createDefaultCert, type CertificateData } from "@/lib/certificate/config";
+import { ENABLE_CERT_DOWNLOAD } from "@/lib/certificate/config";
+import CertificatePreview from "@/components/features/certificate/CertificatePreview";
 
 function AdminContent() {
   const { user } = useAuth();
   const toast = useToast();
-  const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
+  const certRef = useRef<HTMLDivElement>(null);
+  const [name, setName] = useState("");
+  const [course, setCourse] = useState("Khóa học Cơ bản về Bảo mật CyberShield");
+  const [cert, setCert] = useState<CertificateData | null>(null);
+  const [downloading, setDownloading] = useState(false);
 
-  const handleMint = async () => {
-    if (!email.trim()) { toast.warning("Nhập email cần cấp chứng chỉ"); return; }
-    setSending(true);
-    const res = await authService.mintCertificate(email, user?.id ?? "");
-    setSending(false);
-    if (!res.ok) { toast.error(res.error ?? "Lỗi khi cấp chứng chỉ"); return; }
-    if (res.emailSent) toast.success("Chứng chỉ đã gửi qua email thành công!");
-    else toast.warning("Đã lưu kết quả, chứng chỉ sẽ được gửi sau");
+  const handleIssue = () => {
+    if (!name.trim()) { toast.warning("Nhập tên người nhận"); return; }
+    if (!course.trim()) { toast.warning("Nhập tên chứng chỉ"); return; }
+    const data = createDefaultCert(name.trim(), course.trim());
+    setCert(data);
+    toast.success("Chứng chỉ đã được tạo!");
+  };
+
+  const handleDownload = async () => {
+    if (!certRef.current || !ENABLE_CERT_DOWNLOAD) return;
+    setDownloading(true);
+    try {
+      const blob = await toPng(certRef.current, {
+        quality: 1, pixelRatio: 2, backgroundColor: "#0a0e17",
+      });
+      const link = document.createElement("a");
+      link.download = `certificate-${cert?.hashId ?? "preview"}.png`;
+      link.href = blob;
+      link.click();
+    } catch {
+      toast.error("Không thể tải chứng chỉ");
+    }
+    setDownloading(false);
   };
 
   return (
-    <div className="min-h-[70vh] max-w-lg mx-auto space-y-6">
+    <div className="min-h-[70vh] max-w-3xl mx-auto space-y-6">
       <div className="text-center">
         <h1 className="text-3xl font-bold gradient-text">Admin Dashboard</h1>
         <p className="text-sm text-cyber-muted mt-2">Quản trị hệ thống CyberShield</p>
@@ -36,36 +58,65 @@ function AdminContent() {
         </span>
       </div>
 
-      {user?.role === "OWNER" && (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="glass-enhanced rounded-xl p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-            👑 God Mode — Mint Certificate
-          </h2>
-          <p className="text-xs text-cyber-muted">
-            Cấp chứng chỉ trực tiếp cho bất kỳ email nào mà không cần qua bài thi.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@example.com"
-              className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-cyber-muted/50 focus:outline-none focus:border-cyber-accent/50 transition-all"
-            />
+          <h2 className="text-lg font-semibold text-white">📜 Cấp chứng chỉ</h2>
+          <p className="text-xs text-cyber-muted">Nhập thông tin và phát hành chứng chỉ ngay lập tức.</p>
+
+          <div className="space-y-3">
+            <div>
+              <label className="block text-xs text-cyber-muted mb-1">Tên người nhận</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Nguyễn Văn A"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-cyber-muted/50 focus:outline-none focus:border-cyber-accent/50 transition-all"
+              />
+            </div>
+            <div>
+              <label className="block text-xs text-cyber-muted mb-1">Tên chứng chỉ</label>
+              <input
+                type="text"
+                value={course}
+                onChange={(e) => setCourse(e.target.value)}
+                placeholder="Tên khóa học"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-cyber-muted/50 focus:outline-none focus:border-cyber-accent/50 transition-all"
+              />
+            </div>
             <button
-              onClick={handleMint}
-              disabled={sending}
-              className="px-6 py-2.5 bg-gradient-to-r from-yellow-500/30 to-orange-500/30 hover:from-yellow-500/50 hover:to-orange-500/50 text-white rounded-lg border border-yellow-500/40 transition-all text-sm font-semibold whitespace-nowrap disabled:opacity-50"
+              onClick={handleIssue}
+              className="w-full py-2.5 bg-gradient-to-r from-cyber-accent/30 to-purple-500/30 hover:from-cyber-accent/50 hover:to-purple-500/50 text-white rounded-lg border border-cyber-accent/40 transition-all text-sm font-semibold"
             >
-              {sending ? "Đang cấp..." : "Mint Certificate 🏆"}
+              🏆 Phát hành
             </button>
           </div>
         </div>
-      )}
+
+        <div className="flex flex-col items-center justify-center space-y-4">
+          {cert ? (
+            <>
+              <CertificatePreview ref={certRef} data={cert} />
+              <button
+                onClick={handleDownload}
+                disabled={downloading}
+                className="px-6 py-2.5 bg-gradient-to-r from-cyber-accent/30 to-purple-500/30 hover:from-cyber-accent/50 hover:to-purple-500/50 text-white rounded-xl border border-cyber-accent/40 transition-all text-sm font-semibold disabled:opacity-50"
+              >
+                {downloading ? "Đang tải..." : "📥 Tải xuống chứng chỉ"}
+              </button>
+            </>
+          ) : (
+            <div className="text-center text-cyber-muted text-sm">
+              <p className="text-4xl mb-3">📜</p>
+              <p>Nhập thông tin và bấm Phát hành</p>
+              <p className="text-xs mt-1">để xem trước chứng chỉ</p>
+            </div>
+          )}
+        </div>
+      </div>
 
       <div className="glass-enhanced rounded-xl p-4 text-sm text-cyber-muted space-y-2">
-        <p>📊 Thống kê hệ thống đang được xây dựng.</p>
-        <p>🔧 Quyền hạn hiện tại: {user?.role === "OWNER" ? "Toàn quyền (God Mode)" : user?.role === "ADMIN" ? "Quản trị" : "Không xác định"}</p>
+        <p>📊 Quyền hạn: {user?.role === "OWNER" ? "Toàn quyền (God Mode)" : "Quản trị"}</p>
       </div>
     </div>
   );

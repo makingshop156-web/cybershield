@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useExam } from "@/lib/hooks/useExam";
 import { useCountdown } from "@/lib/hooks/useCountdown";
 import { ENABLE_EXAM_MODE } from "@/lib/exam/config";
+import { useAuth } from "@/lib/hooks/useAuth";
 import ExamHeader from "./ExamHeader";
 import ExamQuestion from "./ExamQuestion";
 import ExamResultView from "./ExamResult";
@@ -12,17 +13,17 @@ interface ExamPageProps {
 }
 
 export default function ExamPage({ userId }: ExamPageProps) {
+  const { user } = useAuth();
   const {
-    phase, answers, result, tabSwitches, warning, emailStatus,
+    phase, answers, result, tabSwitches, warning,
     questions, duration, start, setAnswer, submit, expire,
   } = useExam(userId);
 
   const countdown = useCountdown(duration);
 
-  // Auto-submit when time expires
-  if (countdown.expired && phase === "running") {
-    expire();
-  }
+  if (countdown.expired && phase === "running") expire();
+
+  const userName = user?.displayName || userId;
 
   if (!ENABLE_EXAM_MODE) {
     return (
@@ -64,30 +65,22 @@ export default function ExamPage({ userId }: ExamPageProps) {
         )}
 
         {phase === "running" && (
-          <motion.div
-            key="exam"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
+          <motion.div key="exam" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <ExamHeader
               mins={countdown.mins}
               secs={countdown.secs}
               tabSwitches={tabSwitches}
               warning={warning}
             />
-
             <div className="space-y-1">
               {questions.map((q, i) => (
                 <ExamQuestion
-                  key={q.id}
-                  q={q}
-                  index={i}
+                  key={q.id} q={q} index={i}
                   value={answers[q.id] ?? ""}
                   onChange={(val) => setAnswer(q.id, val)}
                 />
               ))}
             </div>
-
             <div className="flex justify-center mt-8 pb-12">
               <button
                 onClick={submit}
@@ -102,8 +95,7 @@ export default function ExamPage({ userId }: ExamPageProps) {
         {phase === "submitting" && (
           <motion.div
             key="submitting"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center min-h-[50vh] space-y-4"
           >
             <div className="w-12 h-12 border-2 border-cyber-accent border-t-transparent rounded-full animate-spin" />
@@ -113,12 +105,10 @@ export default function ExamPage({ userId }: ExamPageProps) {
 
         {phase === "done" && result && (
           <motion.div
-            key="done"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+            key="done" initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             className="flex flex-col items-center justify-center min-h-[70vh]"
           >
-            <ExamResultView result={result} emailStatus={emailStatus} />
+            <ExamResultView result={result} userName={userName} />
           </motion.div>
         )}
       </AnimatePresence>

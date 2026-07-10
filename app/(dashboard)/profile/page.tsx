@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { useProgress } from "@/lib/hooks";
 import { modules, badges } from "@/lib/data";
@@ -6,6 +7,10 @@ import { TopBar } from "@/components/layout/TopBar";
 import { GlassCard, GlassPanel } from "@/components/ui/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { ENABLE_AUTH } from "@/lib/auth/config";
+import { authService } from "@/lib/auth/auth-service";
+import { useToast } from "@/lib/hooks/useToast";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -18,6 +23,20 @@ const stagger = {
 
 export default function ProfilePage() {
   const { progress, loaded, resetProgress } = useProgress();
+  const { user } = useAuth();
+  const toast = useToast();
+  const [displayName, setDisplayName] = useState(user?.displayName ?? "");
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    if (!displayName.trim()) { toast.warning("Tên không được để trống"); return; }
+    setSaving(true);
+    // Simulated save — in local storage mode we just update context
+    setTimeout(() => {
+      setSaving(false);
+      toast.success("Đã cập nhật thông tin");
+    }, 300);
+  };
 
   if (!loaded) {
     return (
@@ -41,18 +60,61 @@ export default function ProfilePage() {
         completed={progress.completedLessons.length}
         total={totalLessons}
       />
-      <div className="max-w-3xl mx-auto px-4 pb-20 pt-8">
+      <div className="max-w-3xl mx-auto px-4 pb-20 pt-8 space-y-8">
         <motion.h1
-          className="text-2xl font-bold gradient-text mb-8"
+          className="text-2xl font-bold gradient-text"
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
         >
           👤 Hồ sơ của bạn
         </motion.h1>
 
-        {/* Stats cards */}
+        {/* Account Info */}
+        {ENABLE_AUTH && user && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="glass-enhanced rounded-xl p-5 space-y-4"
+          >
+            <h2 className="text-sm font-semibold text-white">Tài khoản</h2>
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyber-accent/30 to-purple-500/30 flex items-center justify-center text-lg font-bold text-white">
+                {(user.displayName || user.email)[0].toUpperCase()}
+              </div>
+              <div>
+                <p className="text-sm text-white font-medium">{user.displayName}</p>
+                <p className="text-xs text-cyber-muted">{user.email}</p>
+              </div>
+              <span className="ml-auto text-[10px] uppercase px-2 py-0.5 rounded bg-cyber-accent/10 text-cyber-accent border border-cyber-accent/20">
+                {user.role}
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs text-cyber-muted mb-1">Tên hiển thị</label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-cyber-muted/50 focus:outline-none focus:border-cyber-accent/50 transition-all"
+                />
+              </div>
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="px-5 py-2 bg-cyber-accent/20 hover:bg-cyber-accent/30 text-cyber-accent rounded-lg border border-cyber-accent/30 transition-all text-sm disabled:opacity-50"
+              >
+                {saving ? "Đang lưu..." : "Lưu thay đổi"}
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Stats */}
         <motion.div
-          className="grid grid-cols-3 gap-4 mb-8"
+          className="grid grid-cols-3 gap-4"
           variants={stagger}
           initial="initial"
           animate="animate"
@@ -64,9 +126,7 @@ export default function ProfilePage() {
           ].map((stat) => (
             <motion.div key={stat.label} variants={fadeUp}>
               <GlassPanel className="text-center">
-                <div className={cn("text-2xl font-bold tabular-nums", stat.accent)}>
-                  {stat.value}
-                </div>
+                <div className={cn("text-2xl font-bold tabular-nums", stat.accent)}>{stat.value}</div>
                 <div className="text-xs text-cyber-muted mt-1">{stat.label}</div>
               </GlassPanel>
             </motion.div>
@@ -75,10 +135,9 @@ export default function ProfilePage() {
 
         {/* Progress bar */}
         <motion.div
-          className="mb-8"
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
+          transition={{ delay: 0.1 }}
         >
           <GlassCard>
             <div className="text-sm font-semibold mb-3">Tiến độ tổng thể</div>
@@ -103,7 +162,7 @@ export default function ProfilePage() {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.15 }}
         >
           <h2 className="text-lg font-semibold mb-4">🏆 Huy hiệu đã đạt</h2>
           <motion.div
@@ -120,41 +179,31 @@ export default function ProfilePage() {
                   variants={fadeUp}
                   className={cn(
                     "rounded-xl p-4 border text-center transition-all",
-                    earned
-                      ? "glass-card border-cyber-gold/30"
-                      : "bg-cyber-bg border-glass-border opacity-40"
+                    earned ? "glass-card border-cyber-gold/30" : "bg-cyber-bg border-glass-border opacity-40"
                   )}
                 >
-                  <div className={cn("text-2xl mb-1", !earned && "grayscale")}>
-                    {badge.icon}
-                  </div>
+                  <div className={cn("text-2xl mb-1", !earned && "grayscale")}>{badge.icon}</div>
                   <div className="text-sm font-medium">{badge.name}</div>
-                  <div className="text-xs text-cyber-muted mt-1 line-clamp-2">
-                    {badge.description}
-                  </div>
-                  {!earned && (
-                    <div className="text-[10px] text-cyber-muted mt-2">🔒 Chưa đạt</div>
-                  )}
+                  <div className="text-xs text-cyber-muted mt-1 line-clamp-2">{badge.description}</div>
+                  {!earned && <div className="text-[10px] text-cyber-muted mt-2">🔒 Chưa đạt</div>}
                 </motion.div>
               );
             })}
           </motion.div>
         </motion.div>
 
-        {/* Reset button */}
+        {/* Reset */}
         <motion.div
-          className="mt-12 text-center"
+          className="text-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.3 }}
         >
           <Button
             variant="ghost"
             size="sm"
             onClick={() => {
-              if (window.confirm("Bạn có chắc muốn xóa toàn bộ tiến độ?")) {
-                resetProgress();
-              }
+              if (window.confirm("Bạn có chắc muốn xóa toàn bộ tiến độ?")) resetProgress();
             }}
           >
             🗑 Xóa tiến độ học

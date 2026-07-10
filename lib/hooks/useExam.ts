@@ -11,7 +11,6 @@ export function useExam(userId: string) {
   const [result, setResult] = useState<ExamResult | null>(null);
   const [tabSwitches, setTabSwitches] = useState(0);
   const [warning, setWarning] = useState("");
-  const [emailStatus, setEmailStatus] = useState<"idle" | "sent" | "failed">("idle");
   const visRef = useRef(false);
 
   const start = useCallback(() => {
@@ -21,14 +20,12 @@ export function useExam(userId: string) {
     setResult(null);
     setTabSwitches(0);
     setWarning("");
-    setEmailStatus("idle");
   }, []);
 
   const setAnswer = useCallback((qId: string, val: string) => {
     setAnswers((prev) => ({ ...prev, [qId]: val }));
   }, []);
 
-  // Anti-cheat: detect tab switches
   useEffect(() => {
     if (phase !== "running") return;
     const handler = () => {
@@ -46,24 +43,11 @@ export function useExam(userId: string) {
   const submit = useCallback(async () => {
     if (phase !== "running") return;
     setPhase("submitting");
-    const result = gradeExam(answers);
-    setResult(result);
+    const r = gradeExam(answers);
+    setResult(r);
     setPhase("done");
+  }, [phase, answers]);
 
-    try {
-      const res = await fetch("/api/exam/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, score: result.score, total: result.total, passed: result.passed }),
-      });
-      if (res.ok) setEmailStatus("sent");
-      else setEmailStatus("failed");
-    } catch {
-      setEmailStatus("failed");
-    }
-  }, [phase, answers, userId]);
-
-  // Auto-submit when time expires
   const expiredRef = useRef(false);
   const expire = useCallback(() => {
     if (expiredRef.current || phase !== "running") return;
@@ -72,7 +56,7 @@ export function useExam(userId: string) {
   }, [phase, submit]);
 
   return {
-    phase, answers, result, tabSwitches, warning, emailStatus,
+    phase, answers, result, tabSwitches, warning,
     questions: EXAM_QUESTIONS,
     duration: EXAM_DURATION_MINUTES,
     start, setAnswer, submit, expire,
