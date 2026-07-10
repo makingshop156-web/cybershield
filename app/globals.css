@@ -2,14 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── CSS Custom Properties ─── */
-:root {
-  --glass-bg: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  --glass-blur: 16px;
-}
-
 @layer base {
   * {
     box-sizing: border-box;
@@ -47,13 +39,15 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.08);
+    transform: translateZ(0);
   }
 
   .glass-strong {
     background: rgba(17, 24, 39, 0.85);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translateZ(0);
   }
 
   .glass-card {
@@ -62,10 +56,11 @@
       rgba(17, 24, 39, 0.8) 0%,
       rgba(17, 24, 39, 0.4) 100%
     );
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.06);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    transform: translateZ(0);
   }
 
   .glass-card:hover {
@@ -90,35 +85,6 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
-  }
-
-  .gradient-border {
-    position: relative;
-    border-radius: inherit;
-  }
-
-  .gradient-border::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(135deg, rgba(34, 211, 238, 0.5), rgba(16, 185, 129, 0.5));
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-  }
-
-  .shimmer-bg {
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(255, 255, 255, 0.03) 50%,
-      transparent 100%
-    );
-    background-size: 200% 100%;
-    animation: shimmer 2s linear infinite;
   }
 
   .glow-border {
@@ -150,18 +116,20 @@
 
   .glass-enhanced {
     background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    transform: translateZ(0);
   }
 
   .glass-enhanced-strong {
     background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid rgba(255, 255, 255, 0.12);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    transform: translateZ(0);
   }
 
   .line-clamp-2 {
@@ -171,12 +139,6 @@
     overflow: hidden;
   }
 
-  .text-balance {
-    text-wrap: balance;
-  }
-}
-
-@layer utilities {
   .bg-grid {
     background-image: linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px),
       linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px);
@@ -191,3 +153,5 @@
     );
   }
 }
+
+

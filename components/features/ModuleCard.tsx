@@ -113,14 +113,14 @@ export function ModuleCard({
 
           <div className="flex items-center gap-2 text-xs shrink-0 ml-3">
             <span className="text-cyber-muted tabular-nums">{pct}%</span>
-            <div className="w-16 h-1.5 bg-cyber-bg rounded-full overflow-hidden">
-              <motion.div
-                className="h-full rounded-full bg-gradient-to-r from-cyber-accent2 to-cyber-accent"
-                initial={{ width: 0 }}
-                animate={{ width: `${pct}%` }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-              />
-            </div>
+              <div className="w-16 h-1.5 bg-cyber-bg rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-cyber-accent2 to-cyber-accent origin-left"
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: pct / 100 }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                />
+              </div>
           </div>
         </div>
 

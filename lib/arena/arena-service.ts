@@ -163,7 +163,6 @@ export class ArenaService {
     const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
     this.online = !!(url && key);
-    if (!this.online) console.log("[Arena] Offline mode — Supabase chưa cấu hình");
     return this.online;
   }
 
@@ -191,7 +190,6 @@ export class ArenaService {
     const { data, error } = await supabase
       .from("lobby").insert({ user_id: userId, status: "waiting" }).select().single();
     if (error || !data) {
-      console.warn("[Arena] Supabase lobby failed, fallback offline");
       return this.local.joinLobby(userId);
     }
     return { id: data.id, userId: data.user_id, status: data.status, opponentId: data.opponent_id, createdAt: data.created_at };
@@ -241,7 +239,6 @@ export class ArenaService {
       .insert({ player1_id: player1Id, player2_id: player2Id, player1_elo_before: p1.elo, player2_elo_before: p2.elo, status: "in_progress" })
       .select().single();
     if (error || !data) {
-      console.warn("[Arena] Supabase createMatch failed, fallback offline");
       return this.local.createMatch(player1Id, player2Id, flag);
     }
     return {

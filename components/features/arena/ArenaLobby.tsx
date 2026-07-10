@@ -1,79 +1,14 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { arenaService, type MatchData } from "@/lib/arena/arena-service";
+import { motion } from "framer-motion";
+import { useArenaMatch } from "@/lib/hooks/useArenaMatch";
 import ArenaBattle from "./ArenaBattle";
 
 interface ArenaLobbyProps {
   userId: string;
 }
 
-type Phase = "idle" | "searching" | "matched" | "battle";
-
 export default function ArenaLobby({ userId }: ArenaLobbyProps) {
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [match, setMatch] = useState<MatchData | null>(null);
-  const [elo, setElo] = useState(1000);
-  const pollTimer = useRef<NodeJS.Timeout | null>(null);
-  const botTimer = useRef<NodeJS.Timeout | null>(null);
-
-  useEffect(() => {
-    arenaService.getOrCreateElo(userId).then((p) => setElo(p.elo));
-  }, [userId]);
-
-  const cleanup = () => {
-    if (pollTimer.current) { clearInterval(pollTimer.current); pollTimer.current = null; }
-    if (botTimer.current) { clearTimeout(botTimer.current); botTimer.current = null; }
-  };
-
-  const startBattle = async (opponentId: string) => {
-    cleanup();
-    setPhase("matched");
-    setTimeout(async () => {
-      const matchData = await arenaService.createMatch(userId, opponentId);
-      setMatch(matchData);
-      setPhase("battle");
-    }, 1000);
-  };
-
-  const handleFindMatch = async () => {
-    cleanup();
-    await arenaService.joinLobby(userId);
-    setPhase("searching");
-
-    pollTimer.current = setInterval(async () => {
-      const opponent = await arenaService.findOpponent(userId);
-      if (opponent) {
-        await arenaService.acceptMatch(opponent.id, userId);
-        startBattle(opponent.userId);
-      }
-    }, 2000);
-
-    botTimer.current = setTimeout(async () => {
-      if (phase !== "searching") return;
-      const botId = "bot_" + Math.random().toString(36).substring(2, 8);
-      const botEntry = await arenaService.joinLobby(botId);
-      if (botEntry) {
-        const opponent = await arenaService.findOpponent(botId);
-        if (opponent) {
-          await arenaService.acceptMatch(botEntry.id, userId);
-          startBattle(botId);
-        }
-      }
-    }, 3000);
-  };
-
-  const handleCancel = async () => {
-    cleanup();
-    await arenaService.leaveLobby(userId);
-    setPhase("idle");
-  };
-
-  const handleLeaveBattle = () => {
-    setMatch(null);
-    setPhase("idle");
-    cleanup();
-  };
+  const { phase, match, elo, findMatch, cancel, leaveBattle } = useArenaMatch(userId);
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center">
@@ -106,7 +41,7 @@ export default function ArenaLobby({ userId }: ArenaLobbyProps) {
             </div>
           </div>
           <button
-            onClick={handleFindMatch}
+            onClick={findMatch}
             className="px-8 py-3 bg-gradient-to-r from-cyber-accent/30 to-purple-500/30 hover:from-cyber-accent/50 hover:to-purple-500/50 text-white rounded-xl border border-cyber-accent/40 transition-all text-base font-semibold"
           >
             🔍 Tìm trận
@@ -131,7 +66,7 @@ export default function ArenaLobby({ userId }: ArenaLobbyProps) {
             <p className="text-sm text-cyber-muted mt-1">Hệ thống đang ghép trận cho bạn</p>
           </div>
           <button
-            onClick={handleCancel}
+            onClick={cancel}
             className="px-6 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg border border-red-500/30 transition-all text-sm"
           >
             ✕ Hủy tìm trận
@@ -160,7 +95,7 @@ export default function ArenaLobby({ userId }: ArenaLobbyProps) {
 
       {phase === "battle" && match && (
         <motion.div key="battle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="w-full">
-          <ArenaBattle match={match} userId={userId} onLeave={handleLeaveBattle} />
+          <ArenaBattle match={match} userId={userId} onLeave={leaveBattle} />
         </motion.div>
       )}
     </div>
