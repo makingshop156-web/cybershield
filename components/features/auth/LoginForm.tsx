@@ -2,10 +2,13 @@
 import { useState, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { seedDemoUser } from "@/lib/demo-seed";
 
 export default function LoginForm() {
   const { login } = useAuth();
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,6 +22,17 @@ export default function LoginForm() {
     const err = await login(email, password);
     setLoading(false);
     if (err) setError(err);
+  };
+
+  const demoLogin = async (role: "USER" | "ADMIN") => {
+    setLoading(true);
+    setError("");
+    seedDemoUser(role);
+    const demoEmail = role === "ADMIN" ? "admin@demo.local" : "hocvien@demo.local";
+    const err = await login(demoEmail, "demo123");
+    if (err) setError(err);
+    else router.push("/");
+    setLoading(false);
   };
 
   return (
@@ -72,6 +86,26 @@ export default function LoginForm() {
           <Link href="/register" className="text-cyber-accent hover:underline">Đăng ký</Link>
         </p>
       </form>
+
+      <div className="mt-6 p-4 glass-enhanced rounded-xl space-y-3">
+        <p className="text-xs text-cyber-muted text-center">Trải nghiệm nhanh (1 chạm)</p>
+        <div className="flex gap-2">
+          <button
+            onClick={() => demoLogin("USER")}
+            disabled={loading}
+            className="flex-1 py-2.5 bg-cyber-accent/20 hover:bg-cyber-accent/30 text-cyber-accent rounded-lg border border-cyber-accent/30 transition-all text-sm font-semibold disabled:opacity-50"
+          >
+            🧑‍🎓 Học viên
+          </button>
+          <button
+            onClick={() => demoLogin("ADMIN")}
+            disabled={loading}
+            className="flex-1 py-2.5 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 rounded-lg border border-purple-500/30 transition-all text-sm font-semibold disabled:opacity-50"
+          >
+            🛡️ Admin
+          </button>
+        </div>
+      </div>
     </motion.div>
   );
 }
