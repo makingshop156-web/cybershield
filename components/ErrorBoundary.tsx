@@ -1,6 +1,9 @@
 "use client";
 import { Component, type ReactNode, type ErrorInfo } from "react";
 import { Button } from "@/components/ui/Button";
+import { captureError, initSentry } from "@/lib/sentry";
+
+initSentry();
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -13,7 +16,10 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -24,7 +30,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("[ErrorBoundary]", error, errorInfo);
+    captureError(error, {
+      componentStack: errorInfo.componentStack,
+      env: process.env.NODE_ENV,
+    });
     this.props.onError?.(error, errorInfo);
   }
 
@@ -44,7 +53,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
               Có lỗi xảy ra
             </h2>
             <p className="text-sm text-cyber-muted mb-6 leading-relaxed">
-              Hệ thống gặp sự cố không mong muốn. Đừng lo, dữ liệu của bạn vẫn an toàn.
+              Hệ thống gặp sự cố không mong muốn. Đừng lo, dữ liệu của bạn vẫn
+              an toàn.
             </p>
             <div className="flex items-center justify-center gap-3">
               <Button variant="primary" onClick={this.handleReset}>

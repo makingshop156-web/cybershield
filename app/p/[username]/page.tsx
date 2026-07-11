@@ -1,12 +1,24 @@
 "use client";
 import { useMemo } from "react";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { ENABLE_PUBLIC_PORTFOLIO } from "@/lib/portfolio/config";
 import { portfolioService } from "@/lib/portfolio/portfolio-service";
 import PortfolioHeader from "@/components/features/portfolio/PortfolioHeader";
 import PortfolioStats from "@/components/features/portfolio/PortfolioStats";
-import PortfolioHeatmap from "@/components/features/portfolio/PortfolioHeatmap";
 import PortfolioTrophyRoom from "@/components/features/portfolio/PortfolioTrophyRoom";
+
+const PortfolioHeatmap = dynamic(
+  () => import("@/components/features/portfolio/PortfolioHeatmap"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="glass-enhanced rounded-xl p-4 sm:p-5 mb-8">
+        <div className="h-[140px] animate-pulse bg-white/5 rounded-lg" />
+      </div>
+    ),
+  }
+);
 
 export default function PublicPortfolioPage() {
   const { username } = useParams<{ username: string }>();
@@ -28,8 +40,12 @@ export default function PublicPortfolioPage() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-3">
           <div className="text-5xl">🔍</div>
-          <h1 className="text-xl font-semibold text-white">Không tìm thấy</h1>
-          <p className="text-sm text-cyber-muted">Portfolio này không tồn tại hoặc đang ở chế độ riêng tư</p>
+          <h1 className="text-xl font-semibold text-white">
+            Không tìm thấy
+          </h1>
+          <p className="text-sm text-cyber-muted">
+            Portfolio này không tồn tại hoặc đang ở chế độ riêng tư
+          </p>
         </div>
       </div>
     );

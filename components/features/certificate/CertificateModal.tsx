@@ -1,7 +1,6 @@
 "use client";
 import { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toPng } from "html-to-image";
 import CertificatePreview from "./CertificatePreview";
 import type { CertificateData } from "@/lib/certificate/config";
 import { ENABLE_CERT_DOWNLOAD } from "@/lib/certificate/config";
@@ -12,7 +11,11 @@ interface CertModalProps {
   onClose: () => void;
 }
 
-export default function CertificateModal({ data, open, onClose }: CertModalProps) {
+export default function CertificateModal({
+  data,
+  open,
+  onClose,
+}: CertModalProps) {
   const certRef = useRef<HTMLDivElement>(null);
   const [downloading, setDownloading] = useState(false);
 
@@ -21,6 +24,7 @@ export default function CertificateModal({ data, open, onClose }: CertModalProps
     setDownloading(true);
     try {
       await document.fonts.ready;
+      const { toPng } = await import("html-to-image");
       const blob = await toPng(certRef.current, {
         quality: 1,
         pixelRatio: 2,
@@ -32,7 +36,7 @@ export default function CertificateModal({ data, open, onClose }: CertModalProps
       link.href = blob;
       link.click();
     } catch {
-      // fallback
+      /* silent */
     }
     setDownloading(false);
   };

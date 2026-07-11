@@ -117,8 +117,7 @@ export function Leaderboard({ currentScore = 0, currentFlags = 0 }: LeaderboardP
   const topScore = entries.length > 0 ? entries[0]!.score : 1;
 
   return (
-    <div className="w-full">
-      {/* Header */}
+    <div className="w-full overflow-x-auto">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-sm font-semibold flex items-center gap-2">
           <span>🏆</span> Leaderboard

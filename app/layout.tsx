@@ -3,6 +3,7 @@ import { Inter, Fira_Code, Playfair_Display, Great_Vibes } from "next/font/googl
 import "./globals.css";
 import { ToastProvider } from "@/components/ToastProvider";
 import { AuthProvider } from "@/lib/hooks/useAuth";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
@@ -82,7 +83,7 @@ export default function RootLayout({
         <div className="fixed inset-0 bg-grid pointer-events-none z-0" />
         <div className="fixed inset-0 bg-radial-glow pointer-events-none z-0" />
         <div className="relative z-10">
-          <AuthProvider><ToastProvider>{children}</ToastProvider></AuthProvider>
+          <ErrorBoundary><AuthProvider><ToastProvider>{children}</ToastProvider></AuthProvider></ErrorBoundary>
         </div>
       </body>
     </html>
