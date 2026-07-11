@@ -13,7 +13,7 @@ A personal project I built to learn full-stack development. It's an interactive 
 
 - **Frontend:** React, Tailwind CSS, Framer Motion
 - **Backend:** Node.js, Express
-- **Database:** MongoDB
+- **Database:** PostgreSQL (via Supabase)
 - **Tools/Libraries:** html-to-image, JSON Web Tokens (JWT)
 
 ## ✨ Features
