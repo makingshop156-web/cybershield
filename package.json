@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsc --noEmit",
     "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
+    "start": "NODE_ENV=production node server.js",
+    "lint": "next lint && tsc --noEmit",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
-    "seed": "node seed.js"
+    "seed": "node seed.js",
+    "ci": "npm run type-check && npm run lint && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.1",

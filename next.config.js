@@ -1,5 +1,3 @@
-import type { NextConfig } from "next";
-
 const csp = [
   `default-src 'self'`,
   `script-src 'self' 'unsafe-eval' 'unsafe-inline' https://*.vercel-analytics.com https://*.supabase.co`,
@@ -24,9 +22,11 @@ const securityHeaders = [
   { key: "Content-Security-Policy", value: csp },
 ];
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  compress: true,
 
   async headers() {
     return [
@@ -36,6 +36,10 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
 };
 
-export default nextConfig;
+module.exports = nextConfig;

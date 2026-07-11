@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 
 const WINDOW_MS = 60_000;
 const MAX_REQUESTS = 10;
+const PROD_URL = "https://cybershield-nu-one.vercel.app";
 
 const ipMap = new Map<string, { count: number; resetAt: number }>();
 
@@ -12,14 +13,31 @@ function getIp(req: NextRequest): string {
     || "127.0.0.1";
 }
 
+function corsHeaders(req: NextRequest) {
+  const origin = req.headers.get("origin") || "";
+  const allowed = origin === PROD_URL || origin.endsWith(".vercel.app");
+  return {
+    "Access-Control-Allow-Origin": allowed ? origin : PROD_URL,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, x-user-id, x-user-role, x-user-email",
+    "Access-Control-Max-Age": "86400",
+  };
+}
+
 export function middleware(req: NextRequest) {
+  if (req.method === "OPTIONS") {
+    return new NextResponse(null, { status: 204, headers: corsHeaders(req) });
+  }
+
   const ip = getIp(req);
   const now = Date.now();
   const entry = ipMap.get(ip);
 
   if (!entry || now > entry.resetAt) {
     ipMap.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return NextResponse.next();
+    const res = NextResponse.next();
+    Object.entries(corsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+    return res;
   }
 
   entry.count += 1;
@@ -27,11 +45,13 @@ export function middleware(req: NextRequest) {
   if (entry.count > MAX_REQUESTS) {
     return new NextResponse(JSON.stringify({ error: "Too Many Requests" }), {
       status: 429,
-      headers: { "Content-Type": "application/json", "Retry-After": "60" },
+      headers: { "Content-Type": "application/json", "Retry-After": "60", ...corsHeaders(req) },
     });
   }
 
-  return NextResponse.next();
+  const res = NextResponse.next();
+  Object.entries(corsHeaders(req)).forEach(([k, v]) => res.headers.set(k, v));
+  return res;
 }
 
 export const config = {
